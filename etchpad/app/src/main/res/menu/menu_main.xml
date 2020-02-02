@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.tirtech.etchpad.MainActivity">
     <item
+        android:id="@+id/action_end_path"
+        android:orderInCategory="100"
+        android:title="End Path"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

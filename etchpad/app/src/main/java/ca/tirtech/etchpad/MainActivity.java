@@ -1,18 +1,19 @@
 package ca.tirtech.etchpad;
 
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity {
+
+    RotationManager rotManager;
+    DrawingView drawView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,16 +21,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        TextView[] views = new TextView[] {
+                findViewById(R.id.txtRotX),
+                findViewById(R.id.txtRotY),
+                findViewById(R.id.txtRotZ)
+        };
+        drawView = new DrawingView(this,null);
+        Pen pen = new Pen(drawView);
+        rotManager = new RotationManager(this, views, 0.1f,pen::onRotation);
+        ((ConstraintLayout)findViewById(R.id.layoutCanvases)).addView(drawView);
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -50,6 +53,21 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        if(id == R.id.action_end_path) {
+            if (drawView != null) drawView.endPath();
+        }
+
         return super.onOptionsItemSelected(item);
     }
+
+    protected void onResume() {
+        super.onResume();
+        rotManager.start();
+    }
+
+    protected void onPause() {
+        super.onPause();
+        rotManager.stop();
+    }
+
 }
