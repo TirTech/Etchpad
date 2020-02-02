@@ -42,7 +42,9 @@ public class DrawingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(path,paint);
+        if(path != null) {
+            canvas.drawPath(path,paint);
+        }
         for (Pair<Path,Paint> p : paths) {
             canvas.drawPath(p.first,p.second);
         }

@@ -1,9 +1,9 @@
 package ca.tirtech.etchpad;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     RotationManager rotManager;
     DrawingView drawView;
+    Pen pen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,8 +28,8 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.txtRotZ)
         };
         drawView = new DrawingView(this,null);
-        Pen pen = new Pen(drawView);
-        rotManager = new RotationManager(this, views, 0.1f,pen::onRotation);
+        pen = new Pen(this, drawView);
+        rotManager = new RotationManager(this, views, pen::onRotation);
         ((ConstraintLayout)findViewById(R.id.layoutCanvases)).addView(drawView);
     }
 
@@ -50,11 +51,14 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent settings = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(settings);
             return true;
         }
 
         if(id == R.id.action_end_path) {
             if (drawView != null) drawView.endPath();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -63,11 +67,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         rotManager.start();
+        pen.start();
     }
 
     protected void onPause() {
         super.onPause();
         rotManager.stop();
+        pen.end();
     }
 
 }

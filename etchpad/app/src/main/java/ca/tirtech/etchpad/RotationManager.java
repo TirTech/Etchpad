@@ -2,6 +2,7 @@ package ca.tirtech.etchpad;
 
 import android.app.Activity;
 import android.app.admin.SystemUpdatePolicy;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.arch.core.util.Function;
 import androidx.core.util.Consumer;
+import androidx.preference.PreferenceManager;
 
 import java.util.Vector;
 
@@ -29,18 +31,21 @@ public class RotationManager implements SensorEventListener {
     private float[] baseVector = null;
     private Consumer<float[]> listener;
     private float deadzone;
+    private SharedPreferences sharedPreferences;
 
-    public RotationManager(Activity owner, TextView[] views, float deadzone, Consumer<float[]> listener) {
+    public RotationManager(Activity owner, TextView[] views, Consumer<float[]> listener) {
         sensorManager = (SensorManager)owner.getSystemService(SENSOR_SERVICE);
         rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         outViews = views;
         this.listener = listener;
-        this.deadzone = deadzone;
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(owner);
     }
 
     public void start(){
         sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_NORMAL);
         baseVector = null;
+        this.deadzone =  sharedPreferences.getInt("pen_deadzone", 10) / 1000.0f;
+        Log.i(TAG, "Deadzone is " + deadzone);
     }
 
     public void stop(){
@@ -63,8 +68,6 @@ public class RotationManager implements SensorEventListener {
             outViews[2].setText("Z: " + formatter.format(vector[0]));
             if (Math.abs(vector[1]) > deadzone || Math.abs(vector[2]) > deadzone) {
                 listener.accept(vector);
-            } else {
-                Log.i(TAG,"Vector was deadzoned");
             }
         }
     }

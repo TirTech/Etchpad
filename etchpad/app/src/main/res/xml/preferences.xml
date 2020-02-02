@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androiod="http://schemas.android.com/tools">
+    <SeekBarPreference
+        app:key="pen_sensitivity"
+        app:summary="Adjust the speed of the pen per degree rotated"
+        app:title="Sensitivity"
+        app:showSeekBarValue="true"
+        app:defaultValue="50"
+        android:min="1"
+        android:max="100"/>
+    <SeekBarPreference
+        app:key="pen_deadzone"
+        app:summary="Adjust the angle required to start moving the pen"
+        app:title="Pen Deadzone"
+        app:showSeekBarValue="true"
+        app:defaultValue="10"
+        androiod:min="1"
+        android:max="500"/>
+</PreferenceScreen>
