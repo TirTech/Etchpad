@@ -1,42 +1,50 @@
 package ca.tirtech.etchpad;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.icu.text.SimpleDateFormat;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.TextureView;
 import android.view.View;
 
 import androidx.core.util.Pair;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 import java.util.Stack;
 
 public class DrawingView extends View {
 
     private static String TAG = "Drawing View";
-    Paint paint;
+
     Path path;
+    Paint paint;
     Stack<Pair<Path,Paint>> paths = new Stack<>();
+    float x;
+    float y;
 
     public DrawingView(Context context) {
         super(context);
-        initPaint();
     }
 
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initPaint();
-    }
-
-    private void initPaint() {
-        paint = new Paint();
-        paint.setAntiAlias(false);
-        paint.setColor(Color.RED);
-        paint.setStrokeJoin(Paint.Join.BEVEL);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5f);
     }
 
     @Override
@@ -50,29 +58,56 @@ public class DrawingView extends View {
         }
     }
 
-    public void traversePath(float x, float y) {
-        if (paint == null) {
-            initPaint();
+    public void drawOn(float x, float y, Paint paint) {
+
+        if (this.paint == null) {
+            this.paint = paint;
+        } else if (this.paint != paint) {
+            if (path != null){
+                paths.push(new Pair<>(path, new Paint(this.paint)));
+            }
+            path = null;
+            this.paint = paint;
         }
+
         if (path == null) {
             path = new Path();
-            path.moveTo(x,y);
-            return;
+            path.moveTo(this.x,this.y);
         }
+
         path.lineTo(x,y);
+        this.x = x;
+        this.y = y;
     }
 
-    public void endPath() {
-        paths.push(new Pair<>(path, paint));
-        path = null;
-        paint = null;
-    }
+    public void save() {
+        try {
+            // Create an image file name
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String imageFileName = "JPEG_" + timeStamp + "_";
+            File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            final File image = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    ".jpg",         /* suffix */
+                    storageDir      /* directory */
+            );
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            paint.setColor(paint.getColor() == Color.RED ? Color.BLUE : Color.RED);
+            setDrawingCacheEnabled(true);
+            Bitmap b = getDrawingCache();
+            new Thread(() -> {
+                try {
+                    FileOutputStream fos = new FileOutputStream(image);
+                    b.compress(Bitmap.CompressFormat.JPEG, 95, fos);
+                    fos.flush();
+                    fos.close();
+
+                    MediaStore.Images.Media.insertImage(getContext().getContentResolver(),image.getAbsolutePath(),image.getName(),image.getName());
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }).start();
+        } catch (IOException ex) {
+            Log.e(TAG,ex.getMessage());
         }
-        return true;
     }
 }
