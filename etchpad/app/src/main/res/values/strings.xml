@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Etchpad</string>
     <string name="action_settings">Settings</string>
+    <string name="action_save">Save</string>
+    <string name="action_export">Export as JPG</string>
+    <string name="action_load">Load</string>
 </resources>

@@ -3,13 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.tirtech.etchpad.MainActivity">
     <item
-        android:id="@+id/action_end_path"
+            android:id="@+id/action_settings"
+            android:orderInCategory="100"
+            android:title="@string/action_settings"
+            app:showAsAction="never" />
+    <item
+        android:id="@+id/action_save"
         android:orderInCategory="100"
-        android:title="End Path"
+        android:title="@string/action_save"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_load"
+        android:orderInCategory="100"
+        android:title="@string/action_load"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_export"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/action_export"
         app:showAsAction="never" />
 </menu>

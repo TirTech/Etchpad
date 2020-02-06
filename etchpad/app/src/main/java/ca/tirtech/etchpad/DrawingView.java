@@ -1,86 +1,102 @@
 package ca.tirtech.etchpad;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.icu.text.SimpleDateFormat;
-import android.net.Uri;
 import android.os.Environment;
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.util.AttributeSet;
+import android.util.JsonReader;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.TextureView;
 import android.view.View;
+import androidx.preference.PreferenceManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import androidx.core.util.Pair;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Date;
-import java.util.Stack;
 
 public class DrawingView extends View {
 
     private static String TAG = "Drawing View";
 
-    Path path;
-    Paint paint;
-    Stack<Pair<Path,Paint>> paths = new Stack<>();
-    float x;
-    float y;
+    private String lastFile = null;
+    private DrawingLayer layer;
+    private SharedPreferences sharedPreferences;
+    private float sensitivity;
 
-    public DrawingView(Context context) {
-        super(context);
-    }
-
-    public DrawingView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public DrawingView(Activity activity) {
+        super(activity);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        layer = new DrawingLayer(1000, 600);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(path != null) {
-            canvas.drawPath(path,paint);
-        }
-        for (Pair<Path,Paint> p : paths) {
-            canvas.drawPath(p.first,p.second);
+        if (layer != null) {
+            layer.draw(canvas);
         }
     }
 
-    public void drawOn(float x, float y, Paint paint) {
-
-        if (this.paint == null) {
-            this.paint = paint;
-        } else if (this.paint != paint) {
-            if (path != null){
-                paths.push(new Pair<>(path, new Paint(this.paint)));
-            }
-            path = null;
-            this.paint = paint;
-        }
-
-        if (path == null) {
-            path = new Path();
-            path.moveTo(this.x,this.y);
-        }
-
-        path.lineTo(x,y);
-        this.x = x;
-        this.y = y;
+    public void onRotation(float[] vals) {
+        float xOffset = vals[2] * sensitivity;
+        float yOffset = -1 * vals[1] * sensitivity;
+	    if (layer != null) {
+		    layer.lineToByOffset(xOffset,yOffset);
+	    }
+        invalidate();
     }
-
-    public void save() {
+	
+	/**
+	 * Save this view as a JSON file
+	 */
+	public void save() {
+		if (layer == null) return;
+		try {
+			String json;
+				json = layer.jsonify().toString();
+				Log.i(TAG,json);
+			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+			File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+			String jsonFileName = "JSON_" + timeStamp + "_";
+			final File jsonFile = File.createTempFile(
+					jsonFileName,  /* prefix */
+					".json",         /* suffix */
+					storageDir      /* directory */
+			);
+			lastFile = jsonFile.getAbsolutePath();
+			FileWriter out = new FileWriter(jsonFile);
+			out.write(json);
+			out.flush();
+			out.close();
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Load this view from a JSON file
+	 */
+	public void load() {
+		try {
+			if (lastFile != null) {
+				String json = String.join("",Files.readAllLines(new File(lastFile).toPath()));
+				Log.i(TAG,"JSON in: " + json);
+				JSONObject root = new JSONObject(json);
+				layer = new DrawingLayer(root);
+			}
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Export this view as a JPEG file
+	 */
+	public void export() {
         try {
             // Create an image file name
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -91,9 +107,11 @@ public class DrawingView extends View {
                     ".jpg",         /* suffix */
                     storageDir      /* directory */
             );
-
-            setDrawingCacheEnabled(true);
-            Bitmap b = getDrawingCache();
+            
+            Bitmap b = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas fakeCanvas = new Canvas(b);
+            this.draw(fakeCanvas);
+            
             new Thread(() -> {
                 try {
                     FileOutputStream fos = new FileOutputStream(image);
@@ -110,4 +128,26 @@ public class DrawingView extends View {
             Log.e(TAG,ex.getMessage());
         }
     }
+
+    public void resume() {
+        this.sensitivity = sharedPreferences.getInt("pen_sensitivity", 10);
+    }
+
+    public void pause() {
+        //called when onPause is
+    }
+
+    public void setPaintColor(int color) {
+	    if (layer != null) {
+		    layer.setColor(color);
+	    }
+    }
+
+    public int getPaintColor() {
+        return layer != null ? layer.getColor() : 0;
+    }
+	
+	public void clear() {
+		layer = null;
+	}
 }
