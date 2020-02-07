@@ -9,18 +9,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity {
 	
-	private static String TAG = "Main";
-	RotationManager rotManager;
-	DrawingView drawView;
+	private static final String TAG = "Main";
+	private RotationManager rotManager;
+	private DrawingView drawView;
 	
-	GestureDetector gd = new GestureDetector(getBaseContext(), new GestureDetector.SimpleOnGestureListener() {
+	private final GestureDetector gd = new GestureDetector(getBaseContext(), new GestureDetector.SimpleOnGestureListener() {
 		
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
@@ -84,15 +83,15 @@ public class MainActivity extends AppCompatActivity {
 				drawView.export();
 				return true;
 			case R.id.action_save:
-				Log.i(TAG,"Saving as JSON ...");
+				Log.i(TAG, "Saving as JSON ...");
 				drawView.save();
 				return true;
 			case R.id.action_load:
-				Log.i(TAG,"Loading JSON ...");
+				Log.i(TAG, "Loading JSON ...");
 				drawView.load();
 				return true;
 			case R.id.action_clear:
-				Log.i(TAG,"Cleared Screen");
+				Log.i(TAG, "Cleared Screen");
 				drawView.clear();
 				return true;
 		}
