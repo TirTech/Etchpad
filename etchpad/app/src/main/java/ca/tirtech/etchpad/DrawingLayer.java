@@ -181,17 +181,17 @@ public class DrawingLayer {
 		public JSONObject jsonify() throws JSONException {
         	JSONObject root = new JSONObject();
         	JSONArray points = new JSONArray();
-        	root.put(JSON_PAINT_COLOR,paint.getColor());
         	for(Pair<Float,Float> point: pathPoints) {
-        		JSONArray xy = new JSONArray();
-        		xy.put(point.first);
-        		xy.put(point.second);
-        		points.put(xy);
+		        JSONArray xy = new JSONArray();
+		        xy.put(point.first);
+		        xy.put(point.second);
+		        points.put(xy);
 	        }
-        	root.put(JSON_PATH,points);
-        	root.put(JSON_X,x);
-        	root.put(JSON_Y,y);
-        	return root;
+			root.put(JSON_PATH,points);
+			root.put(JSON_X,x);
+			root.put(JSON_Y,y);
+			root.put(JSON_PAINT_COLOR,paint.getColor());
+			return root;
         }
 		
 		/**
@@ -204,6 +204,7 @@ public class DrawingLayer {
         	this.pathPoints = new ArrayList<>();
 			this.path = new Path();
 			
+			this.paint = initPaint(root.getInt(JSON_PAINT_COLOR));
 			this.y = (float) root.getDouble(JSON_Y);
 			this.x = (float) root.getDouble(JSON_X);
 			JSONArray points = root.getJSONArray(JSON_PATH);

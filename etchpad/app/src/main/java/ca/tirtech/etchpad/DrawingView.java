@@ -7,25 +7,27 @@ import android.graphics.Canvas;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.JsonReader;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 
 public class DrawingView extends View {
 
     private static String TAG = "Drawing View";
-
-    private String lastFile = null;
+    
     private DrawingLayer layer;
     private SharedPreferences sharedPreferences;
     private float sensitivity;
+    private boolean lockMovement = false;
 
     public DrawingView(Activity activity) {
         super(activity);
@@ -42,6 +44,7 @@ public class DrawingView extends View {
     }
 
     public void onRotation(float[] vals) {
+    	if (lockMovement) return;
         float xOffset = vals[2] * sensitivity;
         float yOffset = -1 * vals[1] * sensitivity;
 	    if (layer != null) {
@@ -51,82 +54,126 @@ public class DrawingView extends View {
     }
 	
 	/**
-	 * Save this view as a JSON file
+	 * Save this view as a JSON file. Will prompt for the file name
 	 */
 	public void save() {
 		if (layer == null) return;
-		try {
-			String json;
-				json = layer.jsonify().toString();
-				Log.i(TAG,json);
-			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-			File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-			String jsonFileName = "JSON_" + timeStamp + "_";
-			final File jsonFile = File.createTempFile(
-					jsonFileName,  /* prefix */
-					".json",         /* suffix */
-					storageDir      /* directory */
-			);
-			lastFile = jsonFile.getAbsolutePath();
-			FileWriter out = new FileWriter(jsonFile);
-			out.write(json);
-			out.flush();
-			out.close();
-		} catch (JSONException | IOException e) {
-			e.printStackTrace();
-		}
+		lockMovement = true;
+		//Prompt for file name
+		String jsonFileName = "JSON_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "_";
+		final EditText input = new EditText(getContext());
+		input.setHint("New File Name");
+		input.setInputType(InputType.TYPE_CLASS_TEXT);
+		new AlertDialog.Builder(getContext())
+			.setTitle(R.string.action_save)
+			.setView(input)
+			.setPositiveButton("OK", (dialog, which) -> {
+				try {
+					String in = input.getText().toString();
+					String json = layer.jsonify().toString();
+					Log.d(TAG,json);
+					FileUtils.writeToFile(getContext(), in.isEmpty() ? jsonFileName: in,".json", Environment.DIRECTORY_DOCUMENTS, json);
+					lockMovement = false;
+				} catch (IOException | JSONException e) {
+					dialog.dismiss();
+					new AlertDialog.Builder(getContext())
+							.setTitle(R.string.action_load)
+							.setMessage("The file does not exist, or something went wrong. Please try again.")
+							.setPositiveButton("OK", (d, w) -> lockMovement = false)
+							.show();
+				}
+			})
+			.setNegativeButton("Cancel", (dialog, which) -> {
+				dialog.cancel();
+				lockMovement = false;
+			})
+			.show();
 	}
 	
 	/**
 	 * Load this view from a JSON file
 	 */
 	public void load() {
-		try {
-			if (lastFile != null) {
-				String json = String.join("",Files.readAllLines(new File(lastFile).toPath()));
-				Log.i(TAG,"JSON in: " + json);
-				JSONObject root = new JSONObject(json);
-				layer = new DrawingLayer(root);
-			}
-		} catch (JSONException | IOException e) {
-			e.printStackTrace();
-		}
+		lockMovement = true;
+		//Prompt for file name
+		final EditText input = new EditText(getContext());
+		input.setHint("File Name");
+		input.setInputType(InputType.TYPE_CLASS_TEXT);
+		new AlertDialog.Builder(getContext())
+			.setTitle(R.string.action_load)
+			.setView(input)
+			.setPositiveButton("OK", (dialog, which) -> {
+				try {
+					String json = FileUtils.readFromFile(getContext(), input.getText().toString(), ".json", "", Environment.DIRECTORY_DOCUMENTS);
+					Log.i(TAG,"JSON in: " + json);
+					JSONObject root = new JSONObject(json);
+					layer = new DrawingLayer(root);
+					lockMovement = false;
+				} catch (IOException | JSONException e) {
+					dialog.dismiss();
+					new AlertDialog.Builder(getContext())
+						.setTitle(R.string.action_load)
+						.setMessage("The file does not exist, or something went wrong. Please try again.")
+							.setPositiveButton("OK", (d, w) -> lockMovement = false)
+						.show();
+				}
+			})
+			.setNegativeButton("Cancel", (dialog, which) -> {
+				dialog.cancel();
+				lockMovement = false;
+			})
+			.show();
 	}
 	
 	/**
 	 * Export this view as a JPEG file
 	 */
 	public void export() {
-        try {
-            // Create an image file name
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String imageFileName = "JPEG_" + timeStamp + "_";
-            File storageDir = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-            final File image = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
-            
-            Bitmap b = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas fakeCanvas = new Canvas(b);
-            this.draw(fakeCanvas);
-            
-            new Thread(() -> {
-                try {
-                    FileOutputStream fos = new FileOutputStream(image);
-                    b.compress(Bitmap.CompressFormat.JPEG, 95, fos);
-                    fos.flush();
-                    fos.close();
-
-                    MediaStore.Images.Media.insertImage(getContext().getContentResolver(),image.getAbsolutePath(),image.getName(),image.getName());
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }).start();
-        } catch (IOException ex) {
-            Log.e(TAG,ex.getMessage());
-        }
+		if (layer == null) return;
+		lockMovement = true;
+		//Prompt for file name
+		String jsonFileName = "JPEG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "_";
+		final EditText input = new EditText(getContext());
+		input.setHint("Image Name");
+		input.setInputType(InputType.TYPE_CLASS_TEXT);
+		new AlertDialog.Builder(getContext())
+				.setTitle(R.string.action_export)
+				.setView(input)
+				.setPositiveButton("OK", (dialog, which) -> {
+					try {
+						String in = input.getText().toString();
+						
+						//Load Bitmap
+						Bitmap b = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+						Canvas fakeCanvas = new Canvas(b);
+						this.draw(fakeCanvas);
+						ByteArrayOutputStream fos = new ByteArrayOutputStream();
+						b.compress(Bitmap.CompressFormat.JPEG, 95, fos);
+						fos.flush();
+						byte[] bytes = fos.toByteArray();
+						fos.close();
+						
+						//Write to file
+						Path image = FileUtils.writeToFile(getContext(), in.isEmpty() ? jsonFileName: in,".jpeg", Environment.DIRECTORY_PICTURES, bytes);
+						MediaStore.Images.Media.insertImage(getContext().getContentResolver(),
+								image.toString(),
+								image.getFileName().toString(),
+								image.getFileName().toString());
+						lockMovement = false;
+					} catch (IOException e) {
+						dialog.dismiss();
+						new AlertDialog.Builder(getContext())
+								.setTitle(R.string.action_load)
+								.setMessage("The file does not exist, or something went wrong. Please try again.")
+								.setPositiveButton("OK", (d, w) -> lockMovement = false)
+								.show();
+					}
+				})
+				.setNegativeButton("Cancel", (dialog, which) -> {
+					dialog.cancel();
+					lockMovement = false;
+				})
+				.show();
     }
 
     public void resume() {
@@ -148,6 +195,6 @@ public class DrawingView extends View {
     }
 	
 	public void clear() {
-		layer = null;
+		layer = new DrawingLayer(1000, 600);
 	}
 }
