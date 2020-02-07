@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -38,6 +39,7 @@ public class DrawingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        canvas.drawColor(Color.WHITE);
         if (layer != null) {
             layer.draw(canvas);
         }
