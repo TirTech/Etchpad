@@ -8,10 +8,8 @@ import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity {
 	
@@ -48,14 +46,10 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		TextView[] views = new TextView[]{
-				findViewById(R.id.txtRotX),
-				findViewById(R.id.txtRotY),
-				findViewById(R.id.txtRotZ)
-		};
-		drawView = new DrawingView(this);
-		rotManager = new RotationManager(this, views, drawView::onRotation);
-		((ConstraintLayout) findViewById(R.id.layoutCanvases)).addView(drawView);
+		drawView = findViewById(R.id.drawingView);
+		rotManager = new RotationManager(this);
+		rotManager.setRotationListener(drawView::onRotation);
+		rotManager.setShakeListener(drawView::onShake);
 	}
 	
 	@Override

@@ -150,6 +150,17 @@ public class DrawingLayer {
 	}
 	
 	/**
+	 * Removes the top-most path from the layer
+	 */
+	public void undo() {
+		if (paths.size() > 1) {
+			paths.pop();
+		} else if (paths.size() == 1) {
+			paths.set(0, new LayerPath(initPaint(Color.RED), 1000, 500));
+		}
+	}
+	
+	/**
 	 * A container for settings defining a {@link Path} with a color and current position (head).
 	 * Used as a substitute for {@link Pair}s of {@link Path}s and {@link Paint}s
 	 */

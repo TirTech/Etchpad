@@ -9,9 +9,11 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputType;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceManager;
 import org.json.JSONException;
@@ -29,9 +31,16 @@ public class DrawingView extends View {
 	private DrawingLayer layer;
 	private float sensitivity;
 	private boolean lockMovement = false;
+	private boolean shakeLock = false;
 	
 	public DrawingView(Context context) {
 		super(context);
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+		layer = new DrawingLayer(1000, 600);
+	}
+	
+	public DrawingView(Context context, @Nullable AttributeSet attrs) {
+		super(context, attrs);
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		layer = new DrawingLayer(1000, 600);
 	}
@@ -198,5 +207,15 @@ public class DrawingView extends View {
 	
 	public void clear() {
 		layer = new DrawingLayer(1000, 600);
+	}
+	
+	public void onShake(Integer shakeCount) {
+		if (shakeCount >= 2 && layer != null && !shakeLock) {
+			layer.undo();
+			shakeLock = true;
+			this.requestLayout();
+		} else if (shakeCount < 2) {
+			shakeLock = false;
+		}
 	}
 }
