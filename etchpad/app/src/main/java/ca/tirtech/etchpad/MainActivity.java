@@ -34,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
 		
 		@Override
 		public boolean onSingleTapConfirmed(MotionEvent e) {
-			drawView.setPaintColor(drawView.getPaintColor() == Color.RED ? Color.BLUE : Color.RED);
+			DrawingLayer layer = drawView.getModel().getLayer().getValue();
+			layer.setColor(layer.getColor() == Color.RED ? Color.BLUE : Color.RED);
 			Log.i(TAG, "Changed Color");
 			return true;
 		}
@@ -42,14 +43,15 @@ public class MainActivity extends AppCompatActivity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		drawView = findViewById(R.id.drawingView);
 		rotManager = new RotationManager(this);
-		rotManager.setRotationListener(drawView::onRotation);
-		rotManager.setShakeListener(drawView::onShake);
+		rotManager.setRotationListener(drawView.getModel()::onRotation);
+		rotManager.setShakeListener(drawView.getModel()::onShake);
 	}
 	
 	@Override
@@ -74,19 +76,19 @@ public class MainActivity extends AppCompatActivity {
 				return true;
 			case R.id.action_export:
 				Log.i(TAG, "Exporting as JPG...");
-				drawView.export();
+				drawView.getModel().export(drawView.getContext(), drawView.getWidth(), drawView.getHeight());
 				return true;
 			case R.id.action_save:
 				Log.i(TAG, "Saving as JSON ...");
-				drawView.save();
+				drawView.getModel().save(drawView.getContext());
 				return true;
 			case R.id.action_load:
 				Log.i(TAG, "Loading JSON ...");
-				drawView.load();
+				drawView.getModel().load(drawView.getContext());
 				return true;
 			case R.id.action_clear:
 				Log.i(TAG, "Cleared Screen");
-				drawView.clear();
+				drawView.getModel().getLayer().getValue().clear();
 				return true;
 		}
 		
@@ -96,13 +98,11 @@ public class MainActivity extends AppCompatActivity {
 	protected void onResume() {
 		super.onResume();
 		rotManager.start();
-		drawView.resume();
 	}
 	
 	protected void onPause() {
 		super.onPause();
 		rotManager.stop();
-		drawView.pause();
 	}
 	
 }

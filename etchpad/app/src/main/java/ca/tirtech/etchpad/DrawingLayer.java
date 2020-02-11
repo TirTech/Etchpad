@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import androidx.core.util.Pair;
+import androidx.databinding.Bindable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,7 +13,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class DrawingLayer {
+public class DrawingLayer extends LiveDataObservable {
 	private static final String JSON_LAYER_PATHS = "layer_paths";
 	private static final String JSON_PAINT_COLOR = "paint_color";
 	private static final String JSON_X = "x";
@@ -22,6 +23,7 @@ public class DrawingLayer {
 	private Stack<LayerPath> paths = new Stack<>();
 	
 	public DrawingLayer(float x, float y) {
+		super();
 		paths.push(new LayerPath(initPaint(Color.RED), x, y));
 	}
 	
@@ -35,7 +37,14 @@ public class DrawingLayer {
 	 * @param root the JSON to load from
 	 */
 	public DrawingLayer(JSONObject root) throws JSONException {
+		super();
 		objectify(root);
+	}
+	
+	public void clear() {
+		this.paths.clear();
+		this.paths.push(new LayerPath(initPaint(Color.RED), 1000, 500));
+		notifyChange();
 	}
 	
 	/**
@@ -74,6 +83,7 @@ public class DrawingLayer {
 	public void lineToByOffset(float x, float y) {
 		LayerPath cur = getCurrentLayerPath();
 		lineTo(cur.x + x, cur.y + y);
+		notifyChange();
 	}
 	
 	/**
@@ -88,6 +98,7 @@ public class DrawingLayer {
 		cur.pathPoints.add(new Pair<>(x, y));
 		cur.x = x;
 		cur.y = y;
+		notifyChange();
 	}
 	
 	/**
@@ -95,7 +106,8 @@ public class DrawingLayer {
 	 *
 	 * @return the top-most layer path
 	 */
-	private LayerPath getCurrentLayerPath() {
+	@Bindable
+	public LayerPath getCurrentLayerPath() {
 		return paths.peek();
 	}
 	
@@ -127,6 +139,7 @@ public class DrawingLayer {
 		for (int i = 0; i < layers.length(); i++) {
 			paths.push(new LayerPath(layers.getJSONObject(i)));
 		}
+		notifyChange();
 	}
 	
 	/**
@@ -158,6 +171,7 @@ public class DrawingLayer {
 		} else if (paths.size() == 1) {
 			paths.set(0, new LayerPath(initPaint(Color.RED), 1000, 500));
 		}
+		notifyChange();
 	}
 	
 	/**

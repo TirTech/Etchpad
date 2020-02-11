@@ -10,4 +10,7 @@
     <ca.tirtech.etchpad.DrawingView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/drawingView" app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"/>
+    <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" tools:layout_editor_absoluteY="164dp" tools:layout_editor_absoluteX="216dp" android:id="@+id/seekBar"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
