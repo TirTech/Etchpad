@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.drawingView;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import androidx.core.util.Pair;
 import androidx.databinding.Bindable;
+import ca.tirtech.etchpad.mvvm.LiveDataObservable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

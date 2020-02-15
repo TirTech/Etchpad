@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.mvvm;
 
 import androidx.lifecycle.MutableLiveData;
 

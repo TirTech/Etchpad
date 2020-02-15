@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.drawingView;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -20,7 +19,7 @@ public class DrawingView extends View {
 		initModel(getActivity(context));
 	}
 	
-	public DrawingView(Context context, @Nullable AttributeSet attrs) {
+	public DrawingView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		initModel(getActivity(context));
 	}

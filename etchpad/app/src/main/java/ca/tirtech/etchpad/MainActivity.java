@@ -1,62 +1,35 @@
 package ca.tirtech.etchpad;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import ca.tirtech.etchpad.drawingView.DrawingView;
+import ca.tirtech.etchpad.hardware.InteractionService;
 
 public class MainActivity extends AppCompatActivity {
 	
 	private static final String TAG = "Main";
-	private RotationManager rotManager;
 	private DrawingView drawView;
-	
-	private final GestureDetector gd = new GestureDetector(getBaseContext(), new GestureDetector.SimpleOnGestureListener() {
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			//Double tap
-			return true;
-		}
-		
-		@Override
-		public void onLongPress(MotionEvent e) {
-           /* Matrix m = new Matrix();
-            m.setScale(0.5f,0.5f);
-            drawView.path.transform(m);*/
-		}
-		
-		@Override
-		public boolean onSingleTapConfirmed(MotionEvent e) {
-			DrawingLayer layer = drawView.getModel().getLayer().getValue();
-			layer.setColor(layer.getColor() == Color.RED ? Color.BLUE : Color.RED);
-			Log.i(TAG, "Changed Color");
-			return true;
-		}
-	});
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
+		InteractionService.init(this);
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		drawView = findViewById(R.id.drawingView);
-		rotManager = new RotationManager(this);
-		rotManager.setRotationListener(drawView.getModel()::onRotation);
-		rotManager.setShakeListener(drawView.getModel()::onShake);
 	}
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		return gd.onTouchEvent(event);
+		return InteractionService.onTouchEvent(event);
 	}
 	
 	@Override
@@ -97,12 +70,12 @@ public class MainActivity extends AppCompatActivity {
 	
 	protected void onResume() {
 		super.onResume();
-		rotManager.start();
+		InteractionService.enable();
 	}
 	
 	protected void onPause() {
 		super.onPause();
-		rotManager.stop();
+		InteractionService.disable();
 	}
 	
 }

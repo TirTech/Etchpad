@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.mvvm;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Observable;
