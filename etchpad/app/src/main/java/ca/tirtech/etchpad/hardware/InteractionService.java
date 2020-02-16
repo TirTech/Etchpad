@@ -21,6 +21,7 @@ public class InteractionService {
 	}
 	
 	public static void init(Context context) {
+		if (instance != null) return;
 		instance = new InteractionService(context);
 	}
 	

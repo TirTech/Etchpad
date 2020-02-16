@@ -84,7 +84,6 @@ public class DrawingLayer extends LiveDataObservable {
 	public void lineToByOffset(float x, float y) {
 		LayerPath cur = getCurrentLayerPath();
 		lineTo(cur.x + x, cur.y + y);
-		notifyChange();
 	}
 	
 	/**

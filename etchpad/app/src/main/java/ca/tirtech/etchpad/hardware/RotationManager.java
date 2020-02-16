@@ -20,7 +20,7 @@ public class RotationManager implements SensorEventListener {
 	private final Sensor rotationVector;
 	private Consumer<float[]> rotationListener;
 	private final SharedPreferences sharedPreferences;
-	private float[] baseVector = null;
+	private float[] baseRotMatrix = null;
 	private float deadzone;
 	
 	public RotationManager(Context owner) {
@@ -36,21 +36,22 @@ public class RotationManager implements SensorEventListener {
 	
 	public void start() {
 		sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_GAME);
-		baseVector = null;
+		baseRotMatrix = null;
 		this.deadzone = sharedPreferences.getInt("pen_deadzone", 10) / 1000.0f;
 		Log.i(TAG, "Deadzone is " + deadzone);
 	}
 	
 	public void stop() {
 		sensorManager.unregisterListener(this);
-		baseVector = null;
+		baseRotMatrix = null;
 	}
 	
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-			if (baseVector == null) {
-				baseVector = event.values.clone();
+			if (baseRotMatrix == null) {
+				baseRotMatrix = new float[9];
+				SensorManager.getRotationMatrixFromVector(baseRotMatrix, event.values);
 			}
 			float[] vector = getRelativeRotation(event.values);
 			if (Math.abs(vector[1]) > deadzone)
@@ -73,7 +74,7 @@ public class RotationManager implements SensorEventListener {
 		float[] newVector = new float[3];
 		float[] rotMatrix = new float[9];
 		SensorManager.getRotationMatrixFromVector(rotMatrix, vector);
-		SensorManager.getOrientation(rotMatrix, newVector);
+		SensorManager.getAngleChange(newVector, rotMatrix, baseRotMatrix);
 		return newVector;
 	}
 	

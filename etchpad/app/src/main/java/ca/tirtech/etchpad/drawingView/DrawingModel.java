@@ -37,34 +37,45 @@ public class DrawingModel extends AndroidViewModel {
 	private static final String TAG = "Drawing Model";
 	private final SharedPreferences sharedPreferences;
 	private DeepLiveData<DrawingLayer> layer;
-	private MutableLiveData<Integer> sensitivity;
+	private MutableLiveData<Integer> sensitivityPitch;
+	private MutableLiveData<Integer> sensitivityRoll;
 	private MutableLiveData<Boolean> lockMovement;
 	private MutableLiveData<Boolean> shakeLock;
 	private DeepLiveData<ColorPalette> colorPalette;
 	
+	private SharedPreferences.OnSharedPreferenceChangeListener ospcl = (sharedPreferences, key) -> loadPreferences();
+	private GestureDetector gd = new GestureDetector(getApplication(), new GestureDetector.SimpleOnGestureListener() {
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			colorPalette.getValue().nextColor();
+			getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
+			return true;
+		}
+	});
+	
 	public DrawingModel(Application application) {
 		super(application);
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
+		sharedPreferences.registerOnSharedPreferenceChangeListener(ospcl);
 		lockMovement = new MutableLiveData<>();
 		shakeLock = new MutableLiveData<>();
 		layer = new DeepLiveData<>();
-		sensitivity = new MutableLiveData<>();
+		sensitivityPitch = new MutableLiveData<>();
+		sensitivityRoll = new MutableLiveData<>();
 		colorPalette = new DeepLiveData<>();
 		lockMovement.setValue(false);
 		shakeLock.setValue(false);
 		layer.setValue(new DrawingLayer(1000, 600));
-		sensitivity.setValue(sharedPreferences.getInt("pen_sensitivity", 50));
 		colorPalette.setValue(new ColorPalette());
+		loadPreferences();
 		InteractionService.getInstance().setOnRotation(this::onRotation);
 		InteractionService.getInstance().setOnShake(this::onShake);
-		InteractionService.getInstance().addGestureDetector(new GestureDetector(application, new GestureDetector.SimpleOnGestureListener() {
-			@Override
-			public boolean onSingleTapConfirmed(MotionEvent e) {
-				colorPalette.getValue().nextColor();
-				getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
-				return true;
-			}
-		}));
+		InteractionService.getInstance().addGestureDetector(gd);
+	}
+	
+	private void loadPreferences() {
+		sensitivityPitch.setValue(sharedPreferences.getInt("pen_sensitivity_pitch", 50));
+		sensitivityRoll.setValue(sharedPreferences.getInt("pen_sensitivity_roll", 50));
 	}
 	
 	/**
@@ -190,8 +201,12 @@ public class DrawingModel extends AndroidViewModel {
 				.show();
 	}
 	
-	public MutableLiveData<Integer> getSensitivity() {
-		return sensitivity;
+	public MutableLiveData<Integer> getSensitivityPitch() {
+		return sensitivityPitch;
+	}
+	
+	public MutableLiveData<Integer> getSensitivityRoll() {
+		return sensitivityRoll;
 	}
 	
 	public MutableLiveData<Boolean> getLockMovement() {
@@ -212,8 +227,8 @@ public class DrawingModel extends AndroidViewModel {
 	
 	public void onRotation(float[] vals) {
 		if (lockMovement.getValue()) return;
-		float xOffset = vals[2] * sensitivity.getValue();
-		float yOffset = -1 * vals[1] * sensitivity.getValue();
+		float xOffset = vals[2] * sensitivityPitch.getValue();
+		float yOffset = -1 * vals[1] * sensitivityRoll.getValue();
 		if (layer != null) {
 			layer.getValue().lineToByOffset(xOffset, yOffset);
 		}
