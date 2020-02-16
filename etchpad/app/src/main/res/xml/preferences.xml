@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androiod="http://schemas.android.com/tools">
+                  xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:androiod="http://schemas.android.com/tools">
+    <PreferenceCategory
+            app:key="pen_sensitivity_category"
+            app:title="Tilt Sensitivity">
+        <SeekBarPreference
+                app:key="pen_sensitivity_pitch"
+                app:summary="Adjust the speed of the pen per degree rotated"
+                app:title="Pitch"
+                app:showSeekBarValue="true"
+                app:defaultValue="50"
+                android:min="1"
+                android:max="100"/>
+        <SeekBarPreference
+                app:key="pen_sensitivity_roll"
+                app:summary="Adjust the speed of the pen per degree rotated"
+                app:title="Roll"
+                app:showSeekBarValue="true"
+                app:defaultValue="50"
+                android:min="1"
+                android:max="100"/>
+    </PreferenceCategory>
     <SeekBarPreference
-            app:key="pen_sensitivity"
-            app:summary="Adjust the speed of the pen per degree rotated"
-            app:title="Sensitivity"
+            app:key="pen_deadzone"
+            app:summary="Adjust the angle required to start moving the pen"
+            app:title="Pen Deadzone"
             app:showSeekBarValue="true"
-            app:defaultValue="50"
-            android:min="1"
-            android:max="100"/>
-    <SeekBarPreference
-        app:key="pen_deadzone"
-        app:summary="Adjust the angle required to start moving the pen"
-        app:title="Pen Deadzone"
-        app:showSeekBarValue="true"
-        app:defaultValue="10"
-        androiod:min="1"
-        android:max="500"/>
+            app:defaultValue="10"
+            androiod:min="1"
+            android:max="500"/>
 </PreferenceScreen>

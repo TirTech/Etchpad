@@ -21,6 +21,7 @@ public class InteractionService {
 	}
 	
 	public static void init(Context context) {
+		if (instance != null) return;
 		instance = new InteractionService(context);
 	}
 	
@@ -50,6 +51,12 @@ public class InteractionService {
 			result = result || detector.onTouchEvent(e);
 		}
 		return result;
+	}
+	
+	public void centerRotation() {
+		if (instance == null) return;
+		rotationManager.stop();
+		rotationManager.start();
 	}
 	
 	public void setOnRotation(Consumer<float[]> func) {
