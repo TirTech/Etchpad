@@ -4,6 +4,7 @@ package ca.tirtech.etchpad.drawingView;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -42,6 +43,7 @@ public class DrawingModel extends AndroidViewModel {
 	private MutableLiveData<Boolean> lockMovement;
 	private MutableLiveData<Boolean> shakeLock;
 	private DeepLiveData<ColorPalette> colorPalette;
+	private int orientation = Configuration.ORIENTATION_PORTRAIT;
 	
 	private SharedPreferences.OnSharedPreferenceChangeListener ospcl = (sharedPreferences, key) -> loadPreferences();
 	private GestureDetector gd = new GestureDetector(getApplication(), new GestureDetector.SimpleOnGestureListener() {
@@ -49,6 +51,12 @@ public class DrawingModel extends AndroidViewModel {
 		public boolean onSingleTapConfirmed(MotionEvent e) {
 			colorPalette.getValue().nextColor();
 			getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
+			return true;
+		}
+		
+		@Override
+		public boolean onDoubleTap(MotionEvent e) {
+			InteractionService.getInstance().centerRotation();
 			return true;
 		}
 	});
@@ -71,6 +79,10 @@ public class DrawingModel extends AndroidViewModel {
 		InteractionService.getInstance().setOnRotation(this::onRotation);
 		InteractionService.getInstance().setOnShake(this::onShake);
 		InteractionService.getInstance().addGestureDetector(gd);
+	}
+	
+	public void setOrientation(int orientation) {
+		this.orientation = orientation;
 	}
 	
 	private void loadPreferences() {
@@ -226,12 +238,15 @@ public class DrawingModel extends AndroidViewModel {
 	}
 	
 	public void onRotation(float[] vals) {
-		if (lockMovement.getValue()) return;
+		if (lockMovement.getValue() || layer == null) return;
 		float xOffset = vals[2] * sensitivityPitch.getValue();
 		float yOffset = -1 * vals[1] * sensitivityRoll.getValue();
-		if (layer != null) {
-			layer.getValue().lineToByOffset(xOffset, yOffset);
+		if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			float temp = xOffset;
+			xOffset = -yOffset;
+			yOffset = temp;
 		}
+		layer.getValue().lineToByOffset(xOffset, yOffset);
 	}
 	
 	public void onShake(Integer shakeCount) {

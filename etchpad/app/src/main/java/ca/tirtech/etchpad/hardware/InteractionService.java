@@ -53,6 +53,12 @@ public class InteractionService {
 		return result;
 	}
 	
+	public void centerRotation() {
+		if (instance == null) return;
+		rotationManager.stop();
+		rotationManager.start();
+	}
+	
 	public void setOnRotation(Consumer<float[]> func) {
 		rotationManager.setRotationListener(func);
 	}

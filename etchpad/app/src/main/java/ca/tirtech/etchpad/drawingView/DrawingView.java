@@ -36,6 +36,7 @@ public class DrawingView extends View {
 	
 	private void initModel(AppCompatActivity activity) {
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
+		model.setOrientation(getResources().getConfiguration().orientation);
 		model.getLayer().observe(activity, layer -> {
 			invalidate();
 		});
