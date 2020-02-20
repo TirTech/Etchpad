@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import androidx.core.util.Pair;
 import androidx.databinding.Bindable;
+import androidx.databinding.library.baseAdapters.BR;
 import ca.tirtech.etchpad.mvvm.LiveDataObservable;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,10 +43,14 @@ public class DrawingLayer extends LiveDataObservable {
 		objectify(root);
 	}
 	
+	public DrawingLayer(DrawingLayer layer) throws JSONException {
+		this(layer.jsonify());
+	}
+	
 	public void clear() {
 		this.paths.clear();
 		this.paths.push(new LayerPath(initPaint(Color.RED), 1000, 500));
-		notifyChange();
+		notifyPropertyChanged(BR.currentLayerPath);
 	}
 	
 	/**
@@ -62,6 +67,16 @@ public class DrawingLayer extends LiveDataObservable {
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(5f);
 		return paint;
+	}
+	
+	/**
+	 * Get the color of the current path
+	 *
+	 * @return the current path's paint's color
+	 */
+	@Bindable
+	public int getCurrentPaintColor() {
+		return getCurrentLayerPath().paint.getColor();
 	}
 	
 	/**
@@ -98,7 +113,7 @@ public class DrawingLayer extends LiveDataObservable {
 		cur.pathPoints.add(new Pair<>(x, y));
 		cur.x = x;
 		cur.y = y;
-		notifyChange();
+		notifyPropertyChanged(BR.currentLayerPath);
 	}
 	
 	/**
@@ -139,16 +154,7 @@ public class DrawingLayer extends LiveDataObservable {
 		for (int i = 0; i < layers.length(); i++) {
 			paths.push(new LayerPath(layers.getJSONObject(i)));
 		}
-		notifyChange();
-	}
-	
-	/**
-	 * Get the color of the current path
-	 *
-	 * @return the current path's paint's color
-	 */
-	public int getColor() {
-		return getCurrentLayerPath().paint.getColor();
+		notifyPropertyChanged(BR.currentLayerPath);
 	}
 	
 	/**
@@ -160,6 +166,7 @@ public class DrawingLayer extends LiveDataObservable {
 	public void setColor(int color) {
 		LayerPath cur = getCurrentLayerPath();
 		paths.push(new LayerPath(initPaint(color), cur.x, cur.y));
+		notifyPropertyChanged(BR.currentPaintColor);
 	}
 	
 	/**
@@ -171,7 +178,7 @@ public class DrawingLayer extends LiveDataObservable {
 		} else if (paths.size() == 1) {
 			paths.set(0, new LayerPath(initPaint(Color.RED), 1000, 500));
 		}
-		notifyChange();
+		notifyPropertyChanged(BR.currentLayerPath);
 	}
 	
 	/**
