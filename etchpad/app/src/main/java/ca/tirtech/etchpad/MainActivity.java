@@ -9,12 +9,14 @@ import android.view.MotionEvent;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import ca.tirtech.etchpad.drawingView.DrawingView;
+import ca.tirtech.etchpad.drawingView.network.DrawingProtocol;
 import ca.tirtech.etchpad.hardware.InteractionService;
 
 public class MainActivity extends AppCompatActivity {
 	
 	private static final String TAG = "Main";
 	private DrawingView drawView;
+	private DrawingProtocol drawingProtocol;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,20 @@ public class MainActivity extends AppCompatActivity {
 				Log.i(TAG, "Cleared Screen");
 				drawView.getModel().getLayer().getValue().clear();
 				return true;
+			case R.id.action_host:
+				Log.i(TAG, "Hosting...");
+				drawingProtocol = new DrawingProtocol(this, drawView.getModel());
+				drawingProtocol.host();
+				return true;
+			case R.id.action_join:
+				Log.i(TAG, "Joining...");
+				drawingProtocol = new DrawingProtocol(this, drawView.getModel());
+				drawingProtocol.join();
+				return true;
+			case R.id.action_disconnect:
+				if (drawingProtocol != null) {
+					drawingProtocol.disconnect();
+				}
 		}
 		
 		return super.onOptionsItemSelected(item);

@@ -5,4 +5,7 @@
     <string name="action_export">Export as JPG</string>
     <string name="action_load">Load</string>
     <string name="action_clear">Clear</string>
+    <string name="action_host">Host Canvas</string>
+    <string name="action_join">Join Canvas</string>
+    <string name="action_disconnect">Disconnect Canvas</string>
 </resources>
