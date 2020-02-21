@@ -33,38 +33,33 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 
+/**
+ * LiveModel for storing UI information across the UI lifecycle. This class contains data about the drawing created in the app.
+ * This model responds to user interactions and updates drawing information appropriately.
+ * This model may also have the drawing data saved and loaded from the devices file system using the
+ * {@link #save(Context)} and {@link #load(Context)} methods.
+ */
 public class DrawingModel extends AndroidViewModel {
 	
 	private static final String TAG = "Drawing Model";
 	private final SharedPreferences sharedPreferences;
-	private DeepLiveData<DrawingLayer> layer;
-	private MutableLiveData<Integer> sensitivityPitch;
-	private MutableLiveData<Integer> sensitivityRoll;
-	private MutableLiveData<Boolean> lockMovement;
-	private MutableLiveData<Boolean> shakeLock;
-	private DeepLiveData<ColorPalette> colorPalette;
+	private final DeepLiveData<DrawingLayer> layer;
+	private final MutableLiveData<Integer> sensitivityPitch;
+	private final MutableLiveData<Integer> sensitivityRoll;
+	private final MutableLiveData<Boolean> lockMovement;
+	private final MutableLiveData<Boolean> shakeLock;
+	private final DeepLiveData<ColorPalette> colorPalette;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
 	
-	private SharedPreferences.OnSharedPreferenceChangeListener ospcl = (sharedPreferences, key) -> loadPreferences();
-	private GestureDetector gd = new GestureDetector(getApplication(), new GestureDetector.SimpleOnGestureListener() {
-		@Override
-		public boolean onSingleTapConfirmed(MotionEvent e) {
-			colorPalette.getValue().nextColor();
-			getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
-			return true;
-		}
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			InteractionService.getInstance().centerRotation();
-			return true;
-		}
-	});
-	
+	/**
+	 * Construct a new model given the current application.
+	 *
+	 * @param application the current application
+	 */
 	public DrawingModel(Application application) {
 		super(application);
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
-		sharedPreferences.registerOnSharedPreferenceChangeListener(ospcl);
+		sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> loadPreferences());
 		lockMovement = new MutableLiveData<>();
 		shakeLock = new MutableLiveData<>();
 		layer = new DeepLiveData<>();
@@ -78,9 +73,27 @@ public class DrawingModel extends AndroidViewModel {
 		loadPreferences();
 		InteractionService.getInstance().setOnRotation(this::onRotation);
 		InteractionService.getInstance().setOnShake(this::onShake);
-		InteractionService.getInstance().addGestureDetector(gd);
+		InteractionService.getInstance().addGestureDetector(new GestureDetector(getApplication(), new GestureDetector.SimpleOnGestureListener() {
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent e) {
+				colorPalette.getValue().nextColor();
+				getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
+				return true;
+			}
+			
+			@Override
+			public boolean onDoubleTap(MotionEvent e) {
+				InteractionService.getInstance().centerRotation();
+				return true;
+			}
+		}));
 	}
 	
+	/**
+	 * Set the devices orientation. Assists with determining device tilts.
+	 *
+	 * @param orientation the device orientation.
+	 */
 	public void setOrientation(int orientation) {
 		this.orientation = orientation;
 	}
@@ -92,6 +105,8 @@ public class DrawingModel extends AndroidViewModel {
 	
 	/**
 	 * Save this view as a JSON file. Will prompt for the file name
+	 *
+	 * @param context the context to save using
 	 */
 	public void save(Context context) {
 		if (layer == null) return;
@@ -128,7 +143,8 @@ public class DrawingModel extends AndroidViewModel {
 	}
 	
 	/**
-	 * Load this view from a JSON file
+	 * Load this view from a JSON file.
+	 * @param context the context to save using
 	 */
 	public void load(Context context) {
 		lockMovement.setValue(true);
@@ -163,7 +179,10 @@ public class DrawingModel extends AndroidViewModel {
 	}
 	
 	/**
-	 * Export this view as a JPEG file
+	 * Export this view as a JPEG file.
+	 * @param context the context to save using
+	 * @param width the width of the image to save
+	 * @param height the height of the image to save
 	 */
 	public void export(Context context, int width, int height) {
 		if (layer == null) return;
@@ -213,30 +232,29 @@ public class DrawingModel extends AndroidViewModel {
 				.show();
 	}
 	
-	public MutableLiveData<Integer> getSensitivityPitch() {
-		return sensitivityPitch;
-	}
-	
-	public MutableLiveData<Integer> getSensitivityRoll() {
-		return sensitivityRoll;
-	}
-	
-	public MutableLiveData<Boolean> getLockMovement() {
-		return lockMovement;
-	}
-	
-	public MutableLiveData<Boolean> getShakeLock() {
-		return shakeLock;
-	}
-	
+	/**
+	 * Get the LiveData for the color palette.
+	 *
+	 * @return the color palette LiveData
+	 */
 	public DeepLiveData<ColorPalette> getColorPalette() {
 		return colorPalette;
 	}
 	
+	/**
+	 * Get the LiveData for the drawing layer.
+	 *
+	 * @return the current drawing layer
+	 */
 	public MutableLiveData<DrawingLayer> getLayer() {
 		return layer;
 	}
 	
+	/**
+	 * Calculates the action to take when the device is rotated.
+	 *
+	 * @param vals {@code [z,y,x]} Euler angles of rotation from the start position
+	 */
 	public void onRotation(float[] vals) {
 		if (lockMovement.getValue() || layer == null) return;
 		float xOffset = vals[2] * sensitivityPitch.getValue();
@@ -249,13 +267,18 @@ public class DrawingModel extends AndroidViewModel {
 		layer.getValue().lineToByOffset(xOffset, yOffset);
 	}
 	
+	/**
+	 * Determines whether to undo an action based on the number of shakes and prior shakes.
+	 *
+	 * @param shakeCount number of shakes
+	 */
 	public void onShake(Integer shakeCount) {
-		Log.i(TAG, "Shake lock is " + (shakeLock.getValue().booleanValue() ? "on" : "off"));
+		Log.i(TAG, "Shake lock is " + (shakeLock.getValue() ? "on" : "off"));
 		if (shakeCount < 2) {
 			shakeLock.setValue(false);
 		}
 		
-		if (shakeCount >= 2 && layer.getValue() != null && !shakeLock.getValue().booleanValue()) {
+		if (shakeCount >= 2 && layer.getValue() != null && !shakeLock.getValue()) {
 			layer.getValue().undo();
 			shakeLock.setValue(true);
 		}

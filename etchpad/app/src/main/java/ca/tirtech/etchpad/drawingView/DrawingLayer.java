@@ -15,6 +15,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Stack;
 
+/**
+ * Stores a collection of colored paths. Paths are drawn by traversing from the starting location of the layer
+ * to another point or offset. The layer can be drawn on a canvas by calling {@link #draw(Canvas)}.
+ * <p/>
+ * DrawingLayers may be created from JSON. The JSON may be generated using {@link #jsonify()} on an existing object and can be loaded
+ * using the appropriate constructor, or may be used to replace an existing layer using {@link #objectify(JSONObject)},
+ * though this is discouraged.
+ */
 public class DrawingLayer extends LiveDataObservable {
 	private static final String JSON_LAYER_PATHS = "layer_paths";
 	private static final String JSON_PAINT_COLOR = "paint_color";
@@ -24,37 +32,59 @@ public class DrawingLayer extends LiveDataObservable {
 	
 	private Stack<LayerPath> paths = new Stack<>();
 	
+	/**
+	 * Construct a blank layer. The pen on this layer will start at the provided {@code (x,y)} position.
+	 *
+	 * @param x starting x pos
+	 * @param y starting y pos
+	 */
 	public DrawingLayer(float x, float y) {
 		super();
 		paths.push(new LayerPath(initPaint(Color.RED), x, y));
 	}
 	
 	/**
-	 * Creates a new drawing layer from the given JSON. This is a convenience constructor, replacing the following:<br/>
-	 * <code>
+	 * Creates a new drawing layer from the given JSON. This is a convenience constructor, replacing the following:<br/><br/>
+	 * {@code
 	 * DrawingLayer layer = new DrawingLayer(0,0);<br/>
 	 * layer.{@link #objectify(JSONObject)};
-	 * </code>
+	 * }
 	 *
 	 * @param root the JSON to load from
+	 * @throws JSONException JSON was invalid
 	 */
 	public DrawingLayer(JSONObject root) throws JSONException {
 		super();
 		objectify(root);
 	}
 	
+	/**
+	 * Creates a new drawing layer, initialized from another layer. This is equivalent to:<br/><br/>
+	 * {@code
+	 * JsonObject oldJson = oldLayer.jsonify();
+	 * DrawingLayer layer = new DrawingLayer(oldJson);
+	 * }
+	 *
+	 * @param layer the layer to clone
+	 * @throws JSONException JSON was invalid
+	 */
+	@SuppressWarnings ("CopyConstructorMissesField")
 	public DrawingLayer(DrawingLayer layer) throws JSONException {
 		this(layer.jsonify());
 	}
 	
+	/**
+	 * Clears the layer, reverting to the default path.
+	 */
 	public void clear() {
+		Paint currentPaint = getCurrentLayerPath().paint;
 		this.paths.clear();
-		this.paths.push(new LayerPath(initPaint(Color.RED), 1000, 500));
+		this.paths.push(new LayerPath(currentPaint, 1000, 500));
 		notifyPropertyChanged(BR.currentLayerPath);
 	}
 	
 	/**
-	 * Create a new {@link Paint}
+	 * Create a new {@link Paint}.
 	 *
 	 * @param color the color of the paint
 	 * @return a new {@link Paint} with the specified color
@@ -70,8 +100,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Get the color of the current path
-	 *
+	 * Get the color of the current path.
 	 * @return the current path's paint's color
 	 */
 	@Bindable
@@ -80,7 +109,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Draws all elements of this layer on the provided {@link Canvas}
+	 * Draws all elements of this layer on the provided {@link Canvas}.
 	 *
 	 * @param canvas the canvas to draw on
 	 */
@@ -91,7 +120,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Continue the current line by (x,y) from the current position
+	 * Continue the current line by (x,y) from the current position.
 	 *
 	 * @param x the x offset to draw to
 	 * @param y the y offset to draw to
@@ -102,7 +131,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Continue the current line to the x
+	 * Continue the current line to the x.
 	 *
 	 * @param x the x position to draw to
 	 * @param y the y position to draw to
@@ -117,7 +146,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Get the current layer path. Defined as the layer path that is on the top of the path stack
+	 * Get the current layer path. Defined as the layer path that is on the top of the path stack.
 	 *
 	 * @return the top-most layer path
 	 */
@@ -127,7 +156,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Convert this {@link DrawingLayer} into a {@link JSONObject}. To recreate this object, use {@link #objectify(JSONObject)}
+	 * Convert this DrawingLayer into a {@link JSONObject}. To recreate this object, use {@link #objectify(JSONObject)}.
 	 *
 	 * @return the JSON representation of this object
 	 * @throws JSONException thrown if instance values were not valid JSON types
@@ -143,7 +172,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Load the given {@link JSONObject} into this {@link DrawingLayer}. JSON should conform to the output of {@link #jsonify()}
+	 * Load the given {@link JSONObject} into this DrawingLayer. JSON should conform to the output of {@link #jsonify()}.
 	 *
 	 * @param root the JSON to load from
 	 * @throws JSONException thrown if loaded data was not valid JSON
@@ -170,7 +199,7 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
-	 * Removes the top-most path from the layer
+	 * Removes the top-most path from the layer.
 	 */
 	public void undo() {
 		if (paths.size() > 1) {
@@ -202,11 +231,11 @@ public class DrawingLayer extends LiveDataObservable {
 		}
 		
 		/**
-		 * Creates a new layer from the given JSON. This is a convenience constructor, replacing the following:<br/>
-		 * <code>
+		 * Creates a new layer from the given JSON. This is a convenience constructor, replacing the following:<br/><br/>
+		 * {@code
 		 * LayerPath layer = new LayerPath(Color.RED,0,0);<br/>
 		 * layer.{@link #objectify(JSONObject)};
-		 * </code>
+		 * }
 		 *
 		 * @param root the JSON to load from
 		 */
@@ -215,7 +244,7 @@ public class DrawingLayer extends LiveDataObservable {
 		}
 		
 		/**
-		 * Convert this {@link LayerPath} into a {@link JSONObject}. To recreate this object, use {@link #objectify(JSONObject)}
+		 * Convert this LayerPath into a {@link JSONObject}. To recreate this object, use {@link #objectify(JSONObject)}.
 		 *
 		 * @return the JSON representation of this object
 		 * @throws JSONException thrown if instance values were not valid JSON types
@@ -237,7 +266,7 @@ public class DrawingLayer extends LiveDataObservable {
 		}
 		
 		/**
-		 * Load the given {@link JSONObject} into this {@link LayerPath}. JSON should conform to the output of {@link #jsonify()}
+		 * Load the given {@link JSONObject} into this LayerPath. JSON should conform to the output of {@link #jsonify()}.
 		 *
 		 * @param root the JSON to load from
 		 * @throws JSONException thrown if loaded data was not valid JSON

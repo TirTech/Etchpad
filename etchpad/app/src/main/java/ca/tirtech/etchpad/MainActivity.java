@@ -12,6 +12,9 @@ import ca.tirtech.etchpad.drawingView.DrawingView;
 import ca.tirtech.etchpad.drawingView.network.DrawingProtocol;
 import ca.tirtech.etchpad.hardware.InteractionService;
 
+/**
+ * Main app activity. Contains the drawing view and menus.
+ */
 public class MainActivity extends AppCompatActivity {
 	
 	private static final String TAG = "Main";

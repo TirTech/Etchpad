@@ -1,14 +1,12 @@
 package ca.tirtech.etchpad.hardware;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 import androidx.core.util.Consumer;
-import androidx.preference.PreferenceManager;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -21,7 +19,6 @@ public class ShakeManager implements SensorEventListener {
 	
 	private final SensorManager sensorManager;
 	private final Sensor accelerometer;
-	private final SharedPreferences sharedPreferences;
 	private long lastShake = 0;
 	private int shakeCount = 0;
 	private Consumer<Integer> shakeListener;
@@ -30,7 +27,6 @@ public class ShakeManager implements SensorEventListener {
 		sensorManager = (SensorManager) owner.getSystemService(SENSOR_SERVICE);
 		accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(owner);
 	}
 	
 	public void setShakeListener(Consumer<Integer> shakeListener) {

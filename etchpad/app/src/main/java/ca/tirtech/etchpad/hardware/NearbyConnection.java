@@ -9,8 +9,8 @@ import com.google.android.gms.nearby.connection.*;
 import java.util.function.BiConsumer;
 
 public class NearbyConnection {
-	private static String SERVICE_ID = "ca.tirtech.testingapp";
-	private static String TAG = "NearbyConnection";
+	private static final String SERVICE_ID = "ca.tirtech.testingapp";
+	private static final String TAG = "NearbyConnection";
 	private final PayloadCallback defaultPayloadCallback = new PayloadCallback() {
 		@Override
 		public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
@@ -49,7 +49,7 @@ public class NearbyConnection {
 	private final ConnectionLifecycleCallback connectionLifecycleCallback =
 			new ConnectionLifecycleCallback() {
 				@Override
-				public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
+				public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
 					// Automatically accept the connection on both sides.
 					Nearby.getConnectionsClient(activity).acceptConnection(endpointId, callbackWrapper);
 					Log.i(TAG, "Connection Initiated on " + endpointId);
@@ -57,7 +57,7 @@ public class NearbyConnection {
 				}
 				
 				@Override
-				public void onConnectionResult(String endpointId, ConnectionResolution result) {
+				public void onConnectionResult(@NonNull String endpointId, ConnectionResolution result) {
 					switch (result.getStatus().getStatusCode()) {
 						case ConnectionsStatusCodes.STATUS_OK:
 							// We're connected! Can now start sending and receiving data.
@@ -81,7 +81,7 @@ public class NearbyConnection {
 				}
 				
 				@Override
-				public void onDisconnected(String endpointId) {
+				public void onDisconnected(@NonNull String endpointId) {
 					// We've been disconnected from this endpoint. No more data can be
 					// sent or received.
 					Log.i(TAG, "Connection disconnected on " + endpointId);
@@ -91,7 +91,7 @@ public class NearbyConnection {
 	private final EndpointDiscoveryCallback endpointDiscoveryCallback =
 			new EndpointDiscoveryCallback() {
 				@Override
-				public void onEndpointFound(String endpointId, DiscoveredEndpointInfo info) {
+				public void onEndpointFound(@NonNull String endpointId, @NonNull DiscoveredEndpointInfo info) {
 					// An endpoint was found. We request a connection to it.
 					Nearby.getConnectionsClient(activity)
 							.requestConnection("Discoverer", endpointId, connectionLifecycleCallback)
@@ -110,7 +110,7 @@ public class NearbyConnection {
 				}
 				
 				@Override
-				public void onEndpointLost(String endpointId) {
+				public void onEndpointLost(@NonNull String endpointId) {
 					// A previously discovered endpoint has gone away.
 					Log.i(TAG, "Lost endpoint " + endpointId);
 				}

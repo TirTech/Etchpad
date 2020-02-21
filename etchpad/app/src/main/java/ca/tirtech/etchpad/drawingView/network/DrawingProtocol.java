@@ -15,7 +15,7 @@ import org.json.JSONObject;
 
 public class DrawingProtocol {
 	
-	private static String TAG = "Drawing Protocol";
+	private static final String TAG = "Drawing Protocol";
 	private JSONObject newModel = null;
 	private boolean host = false;
 	private NearbyConnection connection;
@@ -97,7 +97,7 @@ public class DrawingProtocol {
 							break;
 						case "sync_complete":
 							Log.i(TAG, "Got sync complete. Done");
-							syncComplete(data);
+							syncComplete();
 							break;
 						case "perform_change":
 							performChange(data);
@@ -125,7 +125,7 @@ public class DrawingProtocol {
 		}
 	}
 	
-	private void syncComplete(JSONObject data) throws JSONException {
+	private void syncComplete() throws JSONException {
 		//Both done here
 		dialog.setStatus(5, "Sync Complete!");
 		if (host) {
