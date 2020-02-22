@@ -24,6 +24,8 @@ public class DrawingSyncDialog {
 		dialog = new AlertDialog.Builder(context)
 				.setView(R.layout.sync_dialog)
 				.setTitle(R.string.action_host)
+				.setPositiveButton("TEST", null)
+				.setNegativeButton("TEST", null)
 				.show();
 		syncProgress = dialog.findViewById(R.id.pb_sync_progress);
 		txtMessage = dialog.findViewById(R.id.txt_message);
@@ -34,6 +36,21 @@ public class DrawingSyncDialog {
 	public void setStatus(int progress, String message) {
 		txtMessage.setText(message);
 		syncProgress.setProgress(progress);
+		Button btnPos = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+		Button btnNeg = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+		btnNeg.setVisibility(View.GONE);
+		btnPos.setVisibility(View.GONE);
+	}
+	
+	public void setStatusWithCancel(int progress, String message, Consumer<View> onAction) {
+		txtMessage.setText(message);
+		syncProgress.setProgress(progress);
+		Button btnNeg = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+		Button btnPos = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+		btnNeg.setText("Cancel");
+		btnNeg.setVisibility(View.VISIBLE);
+		btnPos.setVisibility(View.GONE);
+		btnNeg.setOnClickListener(onAction::accept);
 	}
 	
 	public void promptForConfirmation(int progress, String message, Consumer<Boolean> onAction) {

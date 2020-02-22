@@ -183,10 +183,13 @@ public class NearbyConnection {
 	}
 	
 	public void disconnect() {
+		ConnectionsClient client = Nearby.getConnectionsClient(activity);
 		if (activeEndpoint != null) {
-			Nearby.getConnectionsClient(activity).disconnectFromEndpoint(activeEndpoint);
+			client.disconnectFromEndpoint(activeEndpoint);
 			Log.i(TAG, "Disconnecting.");
 		}
+		client.stopDiscovery();
+		client.stopAdvertising();
 	}
 	
 }

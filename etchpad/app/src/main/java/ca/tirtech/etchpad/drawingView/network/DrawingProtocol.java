@@ -3,12 +3,15 @@ package ca.tirtech.etchpad.drawingView.network;
 import android.app.Activity;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
 import ca.tirtech.etchpad.hardware.NearbyConnection;
 import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +39,11 @@ public class DrawingProtocol {
 	public void host() {
 		this.host = true;
 		dialog = new DrawingSyncDialog(activity);
-		dialog.setStatus(1, "Waiting for client...");
+		dialog.setStatusWithCancel(1, "Waiting for client...", (v) -> {
+			dialog.close();
+			connection.disconnect();
+			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_host_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
+		});
 		connection.setOnConnected((eid, cr) -> {
 			try {
 				synchronizeCanvases();
@@ -50,7 +57,11 @@ public class DrawingProtocol {
 	public void join() {
 		this.host = false;
 		dialog = new DrawingSyncDialog(activity);
-		dialog.setStatus(1, "Searching for host...");
+		dialog.setStatusWithCancel(1, "Searching for host...", (v) -> {
+			dialog.close();
+			connection.disconnect();
+			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_join_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
+		});
 		connection.setOnConnected((eid, cr) -> {
 			try {
 				synchronizeCanvases();
@@ -71,6 +82,7 @@ public class DrawingProtocol {
 			}
 		}
 		connection.disconnect();
+		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_disconnected, BaseTransientBottomBar.LENGTH_SHORT).show();
 	}
 	
 	public void synchronizeCanvases() throws JSONException {
@@ -135,6 +147,7 @@ public class DrawingProtocol {
 		}
 		model.getLayer().setValue(new NetworkedDrawingLayer(this, model.getLayer().getValue(), newModel));
 		dialog.close();
+		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_connected, BaseTransientBottomBar.LENGTH_SHORT).show();
 	}
 	
 	private void syncHost(JSONObject data) throws JSONException {

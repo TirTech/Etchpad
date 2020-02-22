@@ -9,4 +9,8 @@
     <string name="action_join">Join Canvas</string>
     <string name="action_disconnect">Disconnect Canvas</string>
     <string name="menu_connect">Connect</string>
+    <string name="snack_disconnected">Disconnected</string>
+    <string name="snack_host_cancelled">Hosting Cancelled</string>
+    <string name="snack_join_cancelled">Joining Cancelled</string>
+    <string name="snack_connected">Connected and Synced!</string>
 </resources>
