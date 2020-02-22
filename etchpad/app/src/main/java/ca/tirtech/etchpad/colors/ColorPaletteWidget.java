@@ -14,6 +14,10 @@ import ca.tirtech.etchpad.drawingView.DrawingModel;
 
 import java.util.ArrayList;
 
+/**
+ * Renders the {@link DrawingModel DrawingModel's} {@link ColorPalette} as a horizontal bar.
+ * The currently selected item is highlighted with a border.
+ */
 public class ColorPaletteWidget extends View {
 	
 	private static final String TAG = "Color Palette Widget";
@@ -21,9 +25,21 @@ public class ColorPaletteWidget extends View {
 	private final Paint BORDER_PAINT;
 	private final Paint SELECTION_PAINT;
 	
+	/**
+	 * {@link DrawingModel} that this widget's {@link ColorPalette} is sourced from.
+	 */
 	private DrawingModel model;
+	
+	/**
+	 * List of {@link Paint} objects used to display the colors.
+	 */
 	private ArrayList<Paint> paints = new ArrayList<>();
 	
+	/**
+	 * Constructs a ColorPaletteWidget for the provided context.
+	 *
+	 * @param context context to use for this widget
+	 */
 	public ColorPaletteWidget(Context context) {
 		super(context);
 		BORDER_PAINT = initBorderPaint();
@@ -32,6 +48,12 @@ public class ColorPaletteWidget extends View {
 		computePaints();
 	}
 	
+	/**
+	 * Constructs a ColorPaletteWidget for the provided context.
+	 *
+	 * @param context context to use for this widget
+	 * @param attrs   view attributes
+	 */
 	public ColorPaletteWidget(Context context, @Nullable AttributeSet attrs) {
 		super(context, attrs);
 		BORDER_PAINT = initBorderPaint();
@@ -40,6 +62,12 @@ public class ColorPaletteWidget extends View {
 		computePaints();
 	}
 	
+	/**
+	 * Get the {@link AppCompatActivity} that created this widget from the provided context.
+	 *
+	 * @param context context to derive the activity from
+	 * @return the parent activity
+	 */
 	private AppCompatActivity getActivity(Context context) {
 		while (context instanceof ContextWrapper) {
 			if (context instanceof AppCompatActivity) {
@@ -50,6 +78,11 @@ public class ColorPaletteWidget extends View {
 		return null;
 	}
 	
+	/**
+	 * Retrieve the {@link DrawingModel} used as the source of colors.
+	 *
+	 * @param activity the activity to use for
+	 */
 	private void initModel(AppCompatActivity activity) {
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.getColorPalette().observe(activity, pallet -> {
@@ -58,6 +91,11 @@ public class ColorPaletteWidget extends View {
 		});
 	}
 	
+	/**
+	 * Create a {@link Paint} for drawing.
+	 *
+	 * @return a default paint
+	 */
 	private Paint initSelectionPaint() {
 		Paint p = new Paint();
 		p.setAntiAlias(false);
@@ -67,6 +105,11 @@ public class ColorPaletteWidget extends View {
 		return p;
 	}
 	
+	/**
+	 * Creates a {@link Paint} for drawing the selection border.
+	 *
+	 * @return a paint for drawing borders
+	 */
 	private Paint initBorderPaint() {
 		Paint p = new Paint();
 		p.setAntiAlias(false);
@@ -92,6 +135,9 @@ public class ColorPaletteWidget extends View {
 		
 	}
 	
+	/**
+	 * Recalculates the list of paints being displayed; recoloring, deleting, and creating paints as needed through {@link #initSelectionPaint()}.
+	 */
 	private void computePaints() {
 		ArrayList<Integer> colors = model.getColorPalette().getValue().getColors();
 		while (paints.size() != colors.size()) {

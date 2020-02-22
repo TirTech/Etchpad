@@ -3,6 +3,9 @@ package ca.tirtech.etchpad;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Activity for viewing and setting settings ({@code SharedPreferences}).
+ */
 public class SettingsActivity extends AppCompatActivity {
 	
 	@Override

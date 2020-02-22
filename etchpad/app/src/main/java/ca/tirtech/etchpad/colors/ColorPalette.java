@@ -7,11 +7,25 @@ import ca.tirtech.etchpad.mvvm.LiveDataObservable;
 
 import java.util.ArrayList;
 
+/**
+ * A container class for lists of colors. One color may be selected and cycled trough using {@link #nextColor()}.
+ * Colors may be added and removed from the palette up to an unlimited amount
+ */
 public class ColorPalette extends LiveDataObservable {
 	
+	/**
+	 * List of all colors contained in the palette.
+	 */
 	private ArrayList<Integer> colors = new ArrayList<>();
+	
+	/**
+	 * Index of color that is selected in the {@link #colors} list.
+	 */
 	private int selectedColor = 0;
 	
+	/**
+	 * Construct a ColorPalette containing the default colors.
+	 */
 	public ColorPalette() {
 		this.colors.add(Color.rgb(231, 76, 60));
 		this.colors.add(Color.rgb(230, 126, 34));
@@ -22,25 +36,50 @@ public class ColorPalette extends LiveDataObservable {
 		this.colors.add(Color.rgb(52, 73, 94));
 	}
 	
+	/**
+	 * Returns the colors contained in the palette.
+	 *
+	 * @return the palettes colors
+	 */
 	@Bindable
 	public ArrayList<Integer> getColors() {
 		return colors;
 	}
 	
+	/**
+	 * Returns the selected color.
+	 *
+	 * @return selected color
+	 */
 	@Bindable
 	public Integer getSelectedColor() {
 		return colors.get(selectedColor);
 	}
 	
+	/**
+	 * Sets the selected color index.
+	 *
+	 * @param selectedColor the index of the color to select
+	 */
 	public void setSelectedColor(int selectedColor) {
 		this.selectedColor = selectedColor;
 	}
 	
+	/**
+	 * Adds a color to the palette. This method allows for duplicate colors.
+	 *
+	 * @param color the color to add
+	 */
 	public void addColor(int color) {
 		colors.add(color);
 		notifyPropertyChanged(BR.colors);
 	}
 	
+	/**
+	 * Removes the first instance of the specified color from the palette.
+	 *
+	 * @param color the color to remove
+	 */
 	public void removeColor(int color) {
 		for (int i = colors.size() - 1; i >= 0; i--) {
 			if (colors.get(i) == color) {
@@ -52,13 +91,18 @@ public class ColorPalette extends LiveDataObservable {
 	}
 	
 	/**
-	 * Advance to the next color in the palette
+	 * Advance to the next color in the palette.
 	 */
 	public void nextColor() {
 		selectedColor = (selectedColor + 1) % colors.size();
 		notifyPropertyChanged(BR.selectedColor);
 	}
 	
+	/**
+	 * Returns the index of the selected color.
+	 *
+	 * @return selected color index
+	 */
 	public int getSelectedColorIndex() {
 		return selectedColor;
 	}

@@ -9,16 +9,30 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+/**
+ * The view to draw the user's drawing on. Driven by a {@link DrawingModel}
+ */
 public class DrawingView extends View {
 	
 	private static final String TAG = "Drawing View";
 	private DrawingModel model;
 	
+	/**
+	 * Create a view.
+	 *
+	 * @param context the context to use
+	 */
 	public DrawingView(Context context) {
 		super(context);
 		initModel(getActivity(context));
 	}
 	
+	/**
+	 * Create a view.
+	 *
+	 * @param context the context to use
+	 * @param attrs   the view attributes to use
+	 */
 	public DrawingView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		initModel(getActivity(context));
@@ -37,9 +51,7 @@ public class DrawingView extends View {
 	private void initModel(AppCompatActivity activity) {
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.setOrientation(getResources().getConfiguration().orientation);
-		model.getLayer().observe(activity, layer -> {
-			invalidate();
-		});
+		model.getLayer().observe(activity, layer -> invalidate());
 	}
 	
 	@Override
@@ -51,6 +63,11 @@ public class DrawingView extends View {
 		}
 	}
 	
+	/**
+	 * Get the model that drives this view.
+	 *
+	 * @return the model
+	 */
 	public DrawingModel getModel() {
 		return model;
 	}
