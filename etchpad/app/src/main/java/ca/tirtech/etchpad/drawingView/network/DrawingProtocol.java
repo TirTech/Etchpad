@@ -26,16 +26,33 @@ public class DrawingProtocol {
 	private DrawingSyncDialog dialog;
 	private Activity activity;
 	
+	/**
+	 * Create a drawing protocol to provide syncing with the given model.
+	 *
+	 * @param activity the activity to use for dialogs
+	 * @param model    the model to sync
+	 */
 	public DrawingProtocol(Activity activity, DrawingModel model) {
 		this.model = model;
 		this.activity = activity;
 		this.connection = new NearbyConnection(activity);
 	}
 	
+	/**
+	 * Helper method to convert network messages back to JsonObjects
+	 *
+	 * @param payload the payload to convert
+	 * @return message as JSON
+	 * @throws JSONException JSON was invalid
+	 */
 	private static JSONObject toJson(Payload payload) throws JSONException {
 		return new JSONObject(new String(payload.asBytes()));
 	}
 	
+	/**
+	 * Start hosting this canvas, allowing for others to connect and collaborate.
+	 * Starts network advertising.
+	 */
 	public void host() {
 		this.host = true;
 		dialog = new DrawingSyncDialog(activity);
@@ -54,6 +71,9 @@ public class DrawingProtocol {
 		connection.advertise();
 	}
 	
+	/**
+	 * Join a hosted canvas. Starts network discovery.
+	 */
 	public void join() {
 		this.host = false;
 		dialog = new DrawingSyncDialog(activity);
@@ -72,6 +92,10 @@ public class DrawingProtocol {
 		connection.discover();
 	}
 	
+	/**
+	 * Disconnect from any remote clients. Also stops
+	 * advertising and discovery
+	 */
 	public void disconnect() {
 		DrawingLayer layer = model.getLayer().getValue();
 		if (layer instanceof NetworkedDrawingLayer) {
@@ -85,6 +109,11 @@ public class DrawingProtocol {
 		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_disconnected, BaseTransientBottomBar.LENGTH_SHORT).show();
 	}
 	
+	/**
+	 * Perform a synchronization between this canvas and a remote canvas, following a message protocol.
+	 *
+	 * @throws JSONException JSON was invalid in a message
+	 */
 	public void synchronizeCanvases() throws JSONException {
 		
 		PayloadCallback callback = new PayloadCallback() {
@@ -137,6 +166,12 @@ public class DrawingProtocol {
 		}
 	}
 	
+	/**
+	 * Synchronization finished. Acknowledge if we are the host. Will set up model drawing layer with a
+	 * {@link NetworkedDrawingLayer} to facilitate future updates.
+	 *
+	 * @throws JSONException JSON was invalid
+	 */
 	private void syncComplete() throws JSONException {
 		//Both done here
 		dialog.setStatus(5, "Sync Complete!");
@@ -150,6 +185,12 @@ public class DrawingProtocol {
 		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_connected, BaseTransientBottomBar.LENGTH_SHORT).show();
 	}
 	
+	/**
+	 * Called when this connection is not the host. Responds to complete the sync.
+	 *
+	 * @param data the message containing the host's canvas
+	 * @throws JSONException JSON was invalid
+	 */
 	private void syncHost(JSONObject data) throws JSONException {
 		dialog.setStatus(4, "Sending Canvas...");
 		JSONObject modelDataForeign = data.getJSONObject("data");
@@ -159,6 +200,12 @@ public class DrawingProtocol {
 		newModel = modelDataForeign;
 	}
 	
+	/**
+	 * Called when this connection is the host. Responds by sending the host's canvas.
+	 *
+	 * @param data the message containing the remote's canvas
+	 * @throws JSONException JSON was invalid
+	 */
 	private void syncForeign(JSONObject data) throws JSONException {
 		dialog.setStatus(4, "Sending Canvas...");
 		JSONObject modelDataForeign = data.getJSONObject("data");
@@ -172,6 +219,11 @@ public class DrawingProtocol {
 		newModel = modelDataForeign;
 	}
 	
+	/**
+	 * Called on the remote. Host acknowledges it is ready to sync. Respond by sending remote's canvas.
+	 *
+	 * @throws JSONException JSON was invalid
+	 */
 	private void syncStart() throws JSONException {
 		dialog.setStatus(3, "Sending Canvas...");
 		JSONObject modelData = model.getLayer().getValue().jsonify();
@@ -181,6 +233,12 @@ public class DrawingProtocol {
 		connection.sendMessage(newPayload.toString());
 	}
 	
+	/**
+	 * Request was received to update our copy of the remote canvas. Unpack and update the layer
+	 *
+	 * @param data JSON containing the changes
+	 * @throws JSONException JSON was invalid
+	 */
 	private void performChange(JSONObject data) throws JSONException {
 		JSONObject changes = data.getJSONObject("data");
 		String action = changes.getString("action");
@@ -191,6 +249,12 @@ public class DrawingProtocol {
 		}
 	}
 	
+	/**
+	 * Local drawing layer was updated. Send message to the other device to have it update.
+	 *
+	 * @param action the change that occurred
+	 * @param value  data about the change
+	 */
 	public void createNetworkAction(String action, JSONArray value) {
 		try {
 			if (value == null) {
