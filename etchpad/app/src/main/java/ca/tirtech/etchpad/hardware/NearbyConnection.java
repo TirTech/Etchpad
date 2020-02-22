@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.*;
+import com.google.android.gms.tasks.Task;
 
 import java.util.function.BiConsumer;
 
@@ -116,6 +117,7 @@ public class NearbyConnection {
 				}
 			};
 	
+	private Task<Void> currentMessage = null;
 	
 	public NearbyConnection(Activity activity) {
 		this.activity = activity;
@@ -172,8 +174,8 @@ public class NearbyConnection {
 	}
 	
 	public void sendMessage(String message) {
-		if (activeEndpoint != null) {
-			Nearby.getConnectionsClient(activity).sendPayload(activeEndpoint,
+		if (isConnected()) {
+			currentMessage = Nearby.getConnectionsClient(activity).sendPayload(activeEndpoint,
 					Payload.fromBytes(message.getBytes()));
 		}
 	}
@@ -184,9 +186,17 @@ public class NearbyConnection {
 	
 	public void disconnect() {
 		ConnectionsClient client = Nearby.getConnectionsClient(activity);
-		if (activeEndpoint != null) {
-			client.disconnectFromEndpoint(activeEndpoint);
-			Log.i(TAG, "Disconnecting.");
+		if (isConnected()) {
+			if (currentMessage != null && !currentMessage.isComplete()) {
+				currentMessage.addOnCompleteListener((v) -> {
+					client.disconnectFromEndpoint(activeEndpoint);
+					Log.i(TAG, "Disconnecting.");
+				});
+				Log.i(TAG, "Disconnect delayed due to pending message");
+			} else {
+				client.disconnectFromEndpoint(activeEndpoint);
+				Log.i(TAG, "Disconnecting.");
+			}
 		}
 		client.stopDiscovery();
 		client.stopAdvertising();

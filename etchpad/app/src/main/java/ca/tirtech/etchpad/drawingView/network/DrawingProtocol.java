@@ -16,6 +16,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Class for managing device-to-device communication using {@link NearbyConnection}. This class defines a standard
+ * set of messages accepted by this connection, as well as callbacks and {@link DrawingLayer} integration for
+ * propagating changes between devices.
+ */
 public class DrawingProtocol {
 	
 	private static final String TAG = "Drawing Protocol";
@@ -55,7 +60,7 @@ public class DrawingProtocol {
 	 */
 	public void host() {
 		this.host = true;
-		dialog = new DrawingSyncDialog(activity);
+		dialog = new DrawingSyncDialog(activity, R.string.action_host);
 		dialog.setStatusWithCancel(1, "Waiting for client...", (v) -> {
 			dialog.close();
 			connection.disconnect();
@@ -63,6 +68,7 @@ public class DrawingProtocol {
 		});
 		connection.setOnConnected((eid, cr) -> {
 			try {
+				setupMessageHandler();
 				synchronizeCanvases();
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -76,19 +82,13 @@ public class DrawingProtocol {
 	 */
 	public void join() {
 		this.host = false;
-		dialog = new DrawingSyncDialog(activity);
+		dialog = new DrawingSyncDialog(activity, R.string.action_join);
 		dialog.setStatusWithCancel(1, "Searching for host...", (v) -> {
 			dialog.close();
 			connection.disconnect();
 			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_join_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setOnConnected((eid, cr) -> {
-			try {
-				synchronizeCanvases();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		});
+		connection.setOnConnected((eid, cr) -> setupMessageHandler());
 		connection.discover();
 	}
 	
@@ -97,7 +97,26 @@ public class DrawingProtocol {
 	 * advertising and discovery
 	 */
 	public void disconnect() {
+		disconnect(false);
+	}
+	
+	/**
+	 * Disconnect from any remote clients. Also stops
+	 * advertising and discovery
+	 *
+	 * @param wasMessage whether this is being called by the user or a network message
+	 */
+	private void disconnect(boolean wasMessage) {
 		DrawingLayer layer = model.getLayer().getValue();
+		if (!wasMessage) {
+			try {
+				JSONObject newPayload = new JSONObject();
+				newPayload.put("command", "disconnect");
+				connection.sendMessage(newPayload.toString());
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 		if (layer instanceof NetworkedDrawingLayer) {
 			try {
 				model.getLayer().setValue(new DrawingLayer(layer.jsonify()));
@@ -106,16 +125,14 @@ public class DrawingProtocol {
 			}
 		}
 		connection.disconnect();
-		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_disconnected, BaseTransientBottomBar.LENGTH_SHORT).show();
+		int messageId = wasMessage ? R.string.snack_disconnected_remote : R.string.snack_disconnected;
+		Snackbar.make(activity.findViewById(R.id.activity_main), messageId, BaseTransientBottomBar.LENGTH_SHORT).show();
 	}
 	
 	/**
-	 * Perform a synchronization between this canvas and a remote canvas, following a message protocol.
-	 *
-	 * @throws JSONException JSON was invalid in a message
+	 * Set the connection callback to a handler defining the protocol to follow.
 	 */
-	public void synchronizeCanvases() throws JSONException {
-		
+	private void setupMessageHandler() {
 		PayloadCallback callback = new PayloadCallback() {
 			@Override
 			public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
@@ -143,6 +160,8 @@ public class DrawingProtocol {
 						case "perform_change":
 							performChange(data);
 							break;
+						case "disconnect":
+							disconnect(true);
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -156,14 +175,19 @@ public class DrawingProtocol {
 		};
 		
 		connection.setPayloadCallback(callback);
-		
-		if (host) {
-			dialog.setStatus(3, "Starting sync...");
-			Log.i(TAG, "Starting Sync...");
-			JSONObject newPayload = new JSONObject();
-			newPayload.put("command", "sync_start");
-			connection.sendMessage(newPayload.toString());
-		}
+	}
+	
+	/**
+	 * Perform a synchronization between this canvas and a remote canvas.
+	 *
+	 * @throws JSONException JSON was invalid in a message
+	 */
+	public void synchronizeCanvases() throws JSONException {
+		dialog.setStatus(3, "Starting sync...");
+		Log.i(TAG, "Starting Sync...");
+		JSONObject newPayload = new JSONObject();
+		newPayload.put("command", "sync_start");
+		connection.sendMessage(newPayload.toString());
 	}
 	
 	/**

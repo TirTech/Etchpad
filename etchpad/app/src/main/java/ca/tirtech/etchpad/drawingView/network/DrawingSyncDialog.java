@@ -16,14 +16,14 @@ public class DrawingSyncDialog {
 	private AlertDialog dialog;
 	private TextView txtMessage;
 	
-	public DrawingSyncDialog(Context context) {
-		createSyncDialog(context);
+	public DrawingSyncDialog(Context context, int titleId) {
+		createSyncDialog(context, titleId);
 	}
 	
-	private void createSyncDialog(Context context) {
+	private void createSyncDialog(Context context, int titleId) {
 		dialog = new AlertDialog.Builder(context)
 				.setView(R.layout.sync_dialog)
-				.setTitle(R.string.action_host)
+				.setTitle(titleId)
 				.setPositiveButton("TEST", null)
 				.setNegativeButton("TEST", null)
 				.show();
