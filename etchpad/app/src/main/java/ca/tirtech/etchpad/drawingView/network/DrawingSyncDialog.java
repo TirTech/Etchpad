@@ -16,11 +16,11 @@ public class DrawingSyncDialog {
 	private AlertDialog dialog;
 	private TextView txtMessage;
 	
-	public DrawingSyncDialog(Context context, int titleId) {
-		createSyncDialog(context, titleId);
+	public DrawingSyncDialog(Context context, int titleId, int max) {
+		createSyncDialog(context, titleId, max);
 	}
 	
-	private void createSyncDialog(Context context, int titleId) {
+	private void createSyncDialog(Context context, int titleId, int max) {
 		dialog = new AlertDialog.Builder(context)
 				.setView(R.layout.sync_dialog)
 				.setTitle(titleId)
@@ -29,7 +29,7 @@ public class DrawingSyncDialog {
 				.show();
 		syncProgress = dialog.findViewById(R.id.pb_sync_progress);
 		txtMessage = dialog.findViewById(R.id.txt_message);
-		syncProgress.setMax(4);
+		syncProgress.setMax(max);
 		syncProgress.setProgress(0);
 	}
 	

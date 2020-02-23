@@ -23,6 +23,14 @@ import org.json.JSONObject;
  */
 public class DrawingProtocol {
 	
+	private static final int WAITING = 1;
+	private static final int CONFIRM_PROMPT = 2;
+	private static final int CONFIRM_WAIT = 3;
+	private static final int SYNC_START = 4;
+	private static final int SYNC_SEND = 5;
+	private static final int SYNC_DONE = 6;
+	private static final int MAX_STAGE = 6;
+	
 	private static final String TAG = "Drawing Protocol";
 	private JSONObject newModel = null;
 	private boolean host = false;
@@ -60,21 +68,7 @@ public class DrawingProtocol {
 	 */
 	public void host() {
 		this.host = true;
-		dialog = new DrawingSyncDialog(activity, R.string.action_host);
-		dialog.setStatusWithCancel(1, "Waiting for client...", (v) -> {
-			dialog.close();
-			connection.disconnect();
-			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_host_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
-		});
-		connection.setOnConnectedCallback((eid, cr) -> {
-			try {
-				setupMessageHandler();
-				synchronizeCanvases();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		});
-		connection.advertise();
+		startCommunication(R.string.sync_dialog_host_wait, R.string.action_host, R.string.snack_host_cancelled);
 	}
 	
 	/**
@@ -82,14 +76,50 @@ public class DrawingProtocol {
 	 */
 	public void join() {
 		this.host = false;
-		dialog = new DrawingSyncDialog(activity, R.string.action_join);
-		dialog.setStatusWithCancel(1, "Searching for host...", (v) -> {
+		startCommunication(R.string.sync_dialog_join_wait, R.string.action_join, R.string.snack_join_cancelled);
+	}
+	
+	/**
+	 * Initialize connection callbacks and start protocol execution.
+	 *
+	 * @param waitingMessageId the message to show while waiting for the other device
+	 * @param titleId          the title of the dialog
+	 * @param cancelId         the message to show on the snackbar when waiting is cancelled
+	 */
+	private void startCommunication(int waitingMessageId, int titleId, int cancelId) {
+		dialog = new DrawingSyncDialog(activity, titleId, MAX_STAGE);
+		dialog.setStatusWithCancel(WAITING, activity.getString(waitingMessageId), (v) -> {
 			dialog.close();
 			connection.disconnect();
-			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_join_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
+			Snackbar.make(activity.findViewById(R.id.activity_main), cancelId, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setOnConnectedCallback((eid, cr) -> setupMessageHandler());
-		connection.discover();
+		connection.setConnectionRejectedCallback(e -> {
+			dialog.close();
+			connection.disconnect();
+			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.sync_dialog_verify_failed, BaseTransientBottomBar.LENGTH_SHORT).show();
+		});
+		connection.setOnConnectedCallback((eid, cr) -> {
+			setupMessageHandler();
+			if (host) {
+				try {
+					synchronizeCanvases();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		connection.setConnectionCheckCallback(p -> {
+			dialog.promptForConfirmation(CONFIRM_PROMPT, "Verification Code: " + p.connectionInfo.getAuthenticationToken(), r -> {
+				if (r) {
+					dialog.setStatus(CONFIRM_WAIT, "Waiting for confirmation...");
+					p.success();
+				} else {
+					p.failed();
+				}
+			});
+		});
+		if (host) connection.advertise();
+		else connection.discover();
 	}
 	
 	/**
@@ -183,7 +213,7 @@ public class DrawingProtocol {
 	 * @throws JSONException JSON was invalid in a message
 	 */
 	public void synchronizeCanvases() throws JSONException {
-		dialog.setStatus(3, "Starting sync...");
+		dialog.setStatus(SYNC_START, "Starting sync...");
 		Log.i(TAG, "Starting Sync...");
 		JSONObject newPayload = new JSONObject();
 		newPayload.put("command", "sync_start");
@@ -198,7 +228,7 @@ public class DrawingProtocol {
 	 */
 	private void syncComplete() throws JSONException {
 		//Both done here
-		dialog.setStatus(5, "Sync Complete!");
+		dialog.setStatus(SYNC_DONE, "Sync Complete!");
 		if (host) {
 			JSONObject newPayload = new JSONObject();
 			newPayload.put("command", "sync_complete");
@@ -216,7 +246,7 @@ public class DrawingProtocol {
 	 * @throws JSONException JSON was invalid
 	 */
 	private void syncHost(JSONObject data) throws JSONException {
-		dialog.setStatus(4, "Sending Canvas...");
+		dialog.setStatus(SYNC_DONE, "Completing Sync...");
 		JSONObject modelDataForeign = data.getJSONObject("data");
 		JSONObject newPayload = new JSONObject();
 		newPayload.put("command", "sync_complete");
@@ -231,7 +261,7 @@ public class DrawingProtocol {
 	 * @throws JSONException JSON was invalid
 	 */
 	private void syncForeign(JSONObject data) throws JSONException {
-		dialog.setStatus(4, "Sending Canvas...");
+		dialog.setStatus(SYNC_SEND, "Sending Canvas...");
 		JSONObject modelDataForeign = data.getJSONObject("data");
 		
 		JSONObject modelData = model.getLayer().getValue().jsonify();
@@ -249,7 +279,7 @@ public class DrawingProtocol {
 	 * @throws JSONException JSON was invalid
 	 */
 	private void syncStart() throws JSONException {
-		dialog.setStatus(3, "Sending Canvas...");
+		dialog.setStatus(SYNC_SEND, "Sending Canvas...");
 		JSONObject modelData = model.getLayer().getValue().jsonify();
 		JSONObject newPayload = new JSONObject();
 		newPayload.put("command", "sync_foreign");

@@ -14,6 +14,7 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 	private PayloadCallback payloadCallback;
 	private Consumer<String> onDisconnectCallback;
 	private BiConsumer<String, ConnectionResolution> onConnectionResultCallback;
+	private Consumer<PendingConnection> connectionCheckCallback;
 	
 	public AckedConnectionLifecycleCallback(ConnectionsClient client) {
 		this.client = client;
@@ -31,22 +32,13 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 		this.payloadCallback = payloadCallback;
 	}
 	
+	public void setConnectionCheckCallback(Consumer<PendingConnection> connectionCheckCallback) {
+		this.connectionCheckCallback = connectionCheckCallback;
+	}
+	
 	@Override
 	public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
-		//CONFIRM IT HERE
-		client.acceptConnection(endpointId, new PayloadCallback() {
-			@Override
-			public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-				if (payloadCallback != null) payloadCallback.onPayloadReceived(s, payload);
-			}
-			
-			@Override
-			public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
-				if (payloadCallback != null) payloadCallback.onPayloadTransferUpdate(s, payloadTransferUpdate);
-			}
-		});
-		Log.i(TAG, "Connection Initiated on " + endpointId);
-		client.stopAdvertising();
+		connectionCheckCallback.accept(new PendingConnection(endpointId, connectionInfo));
 	}
 	
 	@Override
@@ -57,5 +49,38 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 	@Override
 	public void onDisconnected(@NonNull String endpointId) {
 		onDisconnectCallback.accept(endpointId);
+	}
+	
+	public class PendingConnection {
+		
+		public String endpointId;
+		public ConnectionInfo connectionInfo;
+		
+		public PendingConnection(String endpointId, ConnectionInfo connectionInfo) {
+			this.endpointId = endpointId;
+			this.connectionInfo = connectionInfo;
+		}
+		
+		public void success() {
+			client.acceptConnection(endpointId, new PayloadCallback() {
+				@Override
+				public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
+					if (payloadCallback != null) payloadCallback.onPayloadReceived(s, payload);
+				}
+				
+				@Override
+				public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+					if (payloadCallback != null) payloadCallback.onPayloadTransferUpdate(s, payloadTransferUpdate);
+				}
+			});
+			Log.i(TAG, "Connection Initiated on " + endpointId);
+			client.stopAdvertising();
+			client.stopDiscovery();
+		}
+		
+		public void failed() {
+			client.rejectConnection(endpointId);
+			Log.i(TAG, "Connection Rejected on " + endpointId);
+		}
 	}
 }

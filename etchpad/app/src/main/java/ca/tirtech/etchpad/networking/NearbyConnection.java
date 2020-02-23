@@ -3,6 +3,7 @@ package ca.tirtech.etchpad.networking;
 import android.app.Activity;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.core.util.Consumer;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.*;
 import com.google.android.gms.tasks.Task;
@@ -19,6 +20,7 @@ public class NearbyConnection {
 	private AckedConnectionLifecycleCallback connectionLifecycleCallback;
 	private ConnectionsClient client;
 	private Task<Void> currentMessage = null;
+	private Consumer<String> connectionRejectedCallback;
 	
 	public NearbyConnection(Activity activity) {
 		client = Nearby.getConnectionsClient(activity);
@@ -40,6 +42,10 @@ public class NearbyConnection {
 				new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build())
 				.addOnSuccessListener(unused -> Log.i(TAG, "Advertising Initiated on " + SERVICE_ID))
 				.addOnFailureListener(e -> Log.i(TAG, "Advertising Failed on " + SERVICE_ID));
+	}
+	
+	public void setConnectionRejectedCallback(Consumer<String> connectionRejectedCallback) {
+		this.connectionRejectedCallback = connectionRejectedCallback;
 	}
 	
 	public void discover() {
@@ -90,11 +96,17 @@ public class NearbyConnection {
 			Log.i(TAG, "Connection OK on " + endpointId + ".");
 			activeEndpoint = endpointId;
 			if (onConnectedCallback != null) onConnectedCallback.accept(endpointId, result);
+		} else if (result.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED) {
+			connectionRejectedCallback.accept(endpointId);
 		}
 	}
 	
 	private void onConnectionDisconnect(String endpointId) {
 		Log.i(TAG, "Connection disconnected on " + endpointId);
 		activeEndpoint = null;
+	}
+	
+	public void setConnectionCheckCallback(Consumer<AckedConnectionLifecycleCallback.PendingConnection> connectionCheckCallback) {
+		connectionLifecycleCallback.setConnectionCheckCallback(connectionCheckCallback);
 	}
 }

@@ -14,4 +14,7 @@
     <string name="snack_host_cancelled">Hosting Cancelled</string>
     <string name="snack_join_cancelled">Joining Cancelled</string>
     <string name="snack_connected">Connected and Synced!</string>
+    <string name="sync_dialog_host_wait">Waiting for client</string>
+    <string name="sync_dialog_join_wait">Waiting for host</string>
+    <string name="sync_dialog_verify_failed">Verification Rejected</string>
 </resources>
