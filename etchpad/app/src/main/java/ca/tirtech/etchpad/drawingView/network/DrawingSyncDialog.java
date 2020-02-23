@@ -16,24 +16,41 @@ public class DrawingSyncDialog {
 	private AlertDialog dialog;
 	private TextView txtMessage;
 	
-	public DrawingSyncDialog(Context context) {
-		createSyncDialog(context);
+	public DrawingSyncDialog(Context context, int titleId, int max) {
+		createSyncDialog(context, titleId, max);
 	}
 	
-	private void createSyncDialog(Context context) {
+	private void createSyncDialog(Context context, int titleId, int max) {
 		dialog = new AlertDialog.Builder(context)
 				.setView(R.layout.sync_dialog)
-				.setTitle(R.string.action_host)
+				.setTitle(titleId)
+				.setPositiveButton("TEST", null)
+				.setNegativeButton("TEST", null)
 				.show();
 		syncProgress = dialog.findViewById(R.id.pb_sync_progress);
 		txtMessage = dialog.findViewById(R.id.txt_message);
-		syncProgress.setMax(4);
+		syncProgress.setMax(max);
 		syncProgress.setProgress(0);
 	}
 	
 	public void setStatus(int progress, String message) {
 		txtMessage.setText(message);
 		syncProgress.setProgress(progress);
+		Button btnPos = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+		Button btnNeg = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+		btnNeg.setVisibility(View.GONE);
+		btnPos.setVisibility(View.GONE);
+	}
+	
+	public void setStatusWithCancel(int progress, String message, Consumer<View> onAction) {
+		txtMessage.setText(message);
+		syncProgress.setProgress(progress);
+		Button btnNeg = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+		Button btnPos = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+		btnNeg.setText("Cancel");
+		btnNeg.setVisibility(View.VISIBLE);
+		btnPos.setVisibility(View.GONE);
+		btnNeg.setOnClickListener(onAction::accept);
 	}
 	
 	public void promptForConfirmation(int progress, String message, Consumer<Boolean> onAction) {

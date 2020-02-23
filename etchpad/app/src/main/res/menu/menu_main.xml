@@ -1,22 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="ca.tirtech.etchpad.MainActivity">
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="ca.tirtech.etchpad.MainActivity">
+    <item
+            android:id="@+id/action_save"
+            android:orderInCategory="100"
+            android:title="@string/action_save"
+            app:showAsAction="ifRoom"/>
+    <item
+            android:id="@+id/action_load"
+            android:orderInCategory="100"
+            android:title="@string/action_load"
+            app:showAsAction="ifRoom"/>
     <item
             android:id="@+id/action_settings"
             android:orderInCategory="100"
             android:title="@string/action_settings"
-            app:showAsAction="never" />
-    <item
-        android:id="@+id/action_save"
-        android:orderInCategory="100"
-        android:title="@string/action_save"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/action_load"
-        android:orderInCategory="100"
-        android:title="@string/action_load"
-        app:showAsAction="never" />
+            app:showAsAction="never"/>
     <item
             android:id="@+id/action_export"
             android:orderInCategory="100"
@@ -28,18 +28,26 @@
             android:title="@string/action_clear"
             app:showAsAction="never"/>
     <item
-            android:id="@+id/action_host"
+            android:id="@+id/menu_connect"
             android:orderInCategory="100"
-            android:title="@string/action_host"
-            app:showAsAction="never"/>
-    <item
-            android:id="@+id/action_join"
-            android:orderInCategory="100"
-            android:title="@string/action_join"
-            app:showAsAction="never"/>
-    <item
-            android:id="@+id/action_disconnect"
-            android:orderInCategory="100"
-            android:title="@string/action_disconnect"
-            app:showAsAction="never"/>
+            android:title="@string/menu_connect"
+            app:showAsAction="never">
+        <menu>
+            <item
+                    android:id="@+id/action_host"
+                    android:orderInCategory="100"
+                    android:title="@string/action_host"
+                    app:showAsAction="never"/>
+            <item
+                    android:id="@+id/action_join"
+                    android:orderInCategory="100"
+                    android:title="@string/action_join"
+                    app:showAsAction="never"/>
+            <item
+                    android:id="@+id/action_disconnect"
+                    android:orderInCategory="100"
+                    android:title="@string/action_disconnect"
+                    app:showAsAction="never"/>
+        </menu>
+    </item>
 </menu>
