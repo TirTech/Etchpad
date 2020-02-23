@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
-import ca.tirtech.etchpad.hardware.NearbyConnection;
+import ca.tirtech.etchpad.networking.NearbyConnection;
 import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
@@ -66,7 +66,7 @@ public class DrawingProtocol {
 			connection.disconnect();
 			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_host_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setOnConnected((eid, cr) -> {
+		connection.setOnConnectedCallback((eid, cr) -> {
 			try {
 				setupMessageHandler();
 				synchronizeCanvases();
@@ -88,7 +88,7 @@ public class DrawingProtocol {
 			connection.disconnect();
 			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_join_cancelled, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setOnConnected((eid, cr) -> setupMessageHandler());
+		connection.setOnConnectedCallback((eid, cr) -> setupMessageHandler());
 		connection.discover();
 	}
 	
