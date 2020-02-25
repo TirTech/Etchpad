@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.EditText;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
@@ -26,6 +27,7 @@ import ca.tirtech.etchpad.colors.ColorPalette;
 import ca.tirtech.etchpad.hardware.FileUtils;
 import ca.tirtech.etchpad.hardware.InteractionService;
 import ca.tirtech.etchpad.mvvm.DeepLiveData;
+import ca.tirtech.etchpad.mvvm.Event;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +52,7 @@ public class DrawingModel extends AndroidViewModel {
 	private final MutableLiveData<Boolean> lockMovement;
 	private final MutableLiveData<Boolean> shakeLock;
 	private final DeepLiveData<ColorPalette> colorPalette;
+	private final MutableLiveData<Event<Integer>> snackbarMessage;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
 	private float[] screenSize = new float[]{0, 0};
 	
@@ -70,6 +73,7 @@ public class DrawingModel extends AndroidViewModel {
 		sensitivityPitch = new MutableLiveData<>();
 		sensitivityRoll = new MutableLiveData<>();
 		colorPalette = new DeepLiveData<>();
+		snackbarMessage = new MutableLiveData<>();
 		lockMovement.setValue(false);
 		shakeLock.setValue(false);
 		layer.setValue(new DrawingLayer(screenSize[0], screenSize[1]));
@@ -111,6 +115,27 @@ public class DrawingModel extends AndroidViewModel {
 		this.orientation = orientation;
 	}
 	
+	/**
+	 * Get the snackbarMessage LiveData. This stores a snackbar message to display.
+	 *
+	 * @return the LiveData
+	 */
+	public MutableLiveData<Event<Integer>> getSnackbarMessage() {
+		return snackbarMessage;
+	}
+	
+	/**
+	 * Create a snackbar message event to propagate to the UI.
+	 *
+	 * @param resId the message to send
+	 */
+	public void sendSnackbarMessage(@StringRes int resId) {
+		snackbarMessage.setValue(new Event<>(resId));
+	}
+	
+	/**
+	 * Load the preferences from SharedPreferences.
+	 */
 	private void loadPreferences() {
 		sensitivityPitch.setValue(sharedPreferences.getInt("pen_sensitivity_pitch", 50));
 		sensitivityRoll.setValue(sharedPreferences.getInt("pen_sensitivity_roll", 50));
@@ -139,6 +164,7 @@ public class DrawingModel extends AndroidViewModel {
 						Log.d(TAG, json);
 						FileUtils.writeToFile(context, in.isEmpty() ? jsonFileName : in, ".json", Environment.DIRECTORY_DOCUMENTS, json);
 						lockMovement.setValue(false);
+						sendSnackbarMessage(R.string.model_save);
 					} catch (IOException | JSONException e) {
 						dialog.dismiss();
 						new AlertDialog.Builder(context)
@@ -175,6 +201,7 @@ public class DrawingModel extends AndroidViewModel {
 						JSONObject root = new JSONObject(json);
 						layer.setValue(new DrawingLayer(root));
 						lockMovement.setValue(false);
+						sendSnackbarMessage(R.string.model_load);
 					} catch (IOException | JSONException e) {
 						dialog.dismiss();
 						new AlertDialog.Builder(context)
@@ -229,6 +256,7 @@ public class DrawingModel extends AndroidViewModel {
 								image.getFileName().toString(),
 								image.getFileName().toString());
 						lockMovement.setValue(false);
+						sendSnackbarMessage(R.string.model_export);
 					} catch (IOException e) {
 						dialog.dismiss();
 						new AlertDialog.Builder(context)

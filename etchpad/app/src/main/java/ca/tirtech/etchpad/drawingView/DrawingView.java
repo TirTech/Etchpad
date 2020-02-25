@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * The view to draw the user's drawing on. Driven by a {@link DrawingModel}
@@ -52,6 +53,11 @@ public class DrawingView extends View {
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.setOrientation(getResources().getConfiguration().orientation);
 		model.getLayer().observe(activity, layer -> invalidate());
+		model.getSnackbarMessage().observe(activity, event -> {
+			if (!event.isHandled()) {
+				Snackbar.make(this, event.consume(), Snackbar.LENGTH_SHORT).show();
+			}
+		});
 	}
 	
 	@Override

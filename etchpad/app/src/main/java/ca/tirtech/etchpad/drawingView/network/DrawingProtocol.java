@@ -11,8 +11,6 @@ import ca.tirtech.etchpad.networking.NearbyConnection;
 import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -94,12 +92,12 @@ public class DrawingProtocol {
 		dialog.setStatusWithCancel(WAITING, activity.getString(waitingMessageId), (v) -> {
 			dialog.close();
 			connection.disconnect();
-			Snackbar.make(activity.findViewById(R.id.activity_main), cancelId, BaseTransientBottomBar.LENGTH_SHORT).show();
+			model.sendSnackbarMessage(cancelId);
 		});
 		callbacks.connectionRejectedCallback = (e -> {
 			dialog.close();
 			connection.disconnect();
-			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.sync_dialog_verify_failed, BaseTransientBottomBar.LENGTH_SHORT).show();
+			model.sendSnackbarMessage(R.string.sync_dialog_verify_failed);
 		});
 		callbacks.onConnectedCallback = ((eid, cr) -> {
 			setupMessageHandler();
@@ -159,7 +157,7 @@ public class DrawingProtocol {
 		}
 		connection.disconnect();
 		int messageId = wasMessage ? R.string.snack_disconnected_remote : R.string.snack_disconnected;
-		Snackbar.make(activity.findViewById(R.id.activity_main), messageId, BaseTransientBottomBar.LENGTH_SHORT).show();
+		model.sendSnackbarMessage(messageId);
 	}
 	
 	/**
@@ -237,7 +235,7 @@ public class DrawingProtocol {
 		}
 		model.getLayer().setValue(new NetworkedDrawingLayer(this, model.getLayer().getValue(), newModel));
 		dialog.close();
-		Snackbar.make(activity.findViewById(R.id.activity_main), R.string.snack_connected, BaseTransientBottomBar.LENGTH_SHORT).show();
+		model.sendSnackbarMessage(R.string.snack_connected);
 	}
 	
 	/**
