@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -50,6 +51,7 @@ public class DrawingModel extends AndroidViewModel {
 	private final MutableLiveData<Boolean> shakeLock;
 	private final DeepLiveData<ColorPalette> colorPalette;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
+	private float[] screenSize = new float[]{0, 0};
 	
 	/**
 	 * Construct a new model given the current application.
@@ -58,6 +60,8 @@ public class DrawingModel extends AndroidViewModel {
 	 */
 	public DrawingModel(Application application) {
 		super(application);
+		screenSize[0] = Resources.getSystem().getDisplayMetrics().widthPixels;
+		screenSize[1] = Resources.getSystem().getDisplayMetrics().heightPixels;
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
 		sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> loadPreferences());
 		lockMovement = new MutableLiveData<>();
@@ -68,7 +72,7 @@ public class DrawingModel extends AndroidViewModel {
 		colorPalette = new DeepLiveData<>();
 		lockMovement.setValue(false);
 		shakeLock.setValue(false);
-		layer.setValue(new DrawingLayer(1000, 600));
+		layer.setValue(new DrawingLayer(screenSize[0], screenSize[1]));
 		colorPalette.setValue(new ColorPalette());
 		loadPreferences();
 		InteractionService.getInstance().setOnRotation(this::onRotation);

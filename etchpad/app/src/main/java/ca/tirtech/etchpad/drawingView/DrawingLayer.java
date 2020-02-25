@@ -30,7 +30,7 @@ public class DrawingLayer extends LiveDataObservable {
 	private static final String JSON_Y = "y";
 	private static final String JSON_PATH = "path";
 	private float[] transformation = new float[]{0f, 0f};
-	
+	private float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();
 	
 	/**
@@ -39,9 +39,10 @@ public class DrawingLayer extends LiveDataObservable {
 	 * @param x starting x pos
 	 * @param y starting y pos
 	 */
-	public DrawingLayer(float x, float y) {
+	public DrawingLayer(float width, float height) {
 		super();
-		paths.push(new LayerPath(initPaint(Color.RED), x, y));
+		setScreenOrigin(width, height);
+		paths.push(new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
 	}
 	
 	/**
@@ -85,6 +86,17 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
+	 * Set the origin of the screen. Used for centring the pen.
+	 *
+	 * @param width  width
+	 * @param height height
+	 */
+	public void setScreenOrigin(float width, float height) {
+		screenOrigin[0] = width / 2;
+		screenOrigin[1] = height / 2;
+	}
+	
+	/**
 	 * Set the transformation to apply to this view.
 	 *
 	 * @param transformation the new transformation
@@ -100,7 +112,7 @@ public class DrawingLayer extends LiveDataObservable {
 	public void clear() {
 		Paint currentPaint = getCurrentLayerPath().paint;
 		this.paths.clear();
-		this.paths.push(new LayerPath(currentPaint, 1000, 500));
+		this.paths.push(new LayerPath(currentPaint, screenOrigin[0], screenOrigin[1]));
 		transformation[0] = 0;
 		transformation[1] = 0;
 		notifyPropertyChanged(BR.currentLayerPath);
@@ -231,7 +243,7 @@ public class DrawingLayer extends LiveDataObservable {
 		if (paths.size() > 1) {
 			paths.pop();
 		} else if (paths.size() == 1) {
-			paths.set(0, new LayerPath(initPaint(Color.RED), 1000, 500));
+			paths.set(0, new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
 			transformation[0] = 0;
 			transformation[1] = 0;
 			notifyPropertyChanged(BR.transformation);
