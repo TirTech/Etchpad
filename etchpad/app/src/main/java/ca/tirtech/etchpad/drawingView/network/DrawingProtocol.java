@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
+import ca.tirtech.etchpad.networking.CallbackHelper;
 import ca.tirtech.etchpad.networking.NearbyConnection;
 import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
@@ -35,6 +36,7 @@ public class DrawingProtocol {
 	private JSONObject newModel = null;
 	private boolean host = false;
 	private NearbyConnection connection;
+	private CallbackHelper callbacks;
 	private DrawingModel model;
 	private DrawingSyncDialog dialog;
 	private Activity activity;
@@ -49,10 +51,11 @@ public class DrawingProtocol {
 		this.model = model;
 		this.activity = activity;
 		this.connection = new NearbyConnection(activity);
+		callbacks = connection.getCallbacks();
 	}
 	
 	/**
-	 * Helper method to convert network messages back to JsonObjects
+	 * Helper method to convert network messages back to JsonObjects.
 	 *
 	 * @param payload the payload to convert
 	 * @return message as JSON
@@ -93,12 +96,12 @@ public class DrawingProtocol {
 			connection.disconnect();
 			Snackbar.make(activity.findViewById(R.id.activity_main), cancelId, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setConnectionRejectedCallback(e -> {
+		callbacks.connectionRejectedCallback = (e -> {
 			dialog.close();
 			connection.disconnect();
 			Snackbar.make(activity.findViewById(R.id.activity_main), R.string.sync_dialog_verify_failed, BaseTransientBottomBar.LENGTH_SHORT).show();
 		});
-		connection.setOnConnectedCallback((eid, cr) -> {
+		callbacks.onConnectedCallback = ((eid, cr) -> {
 			setupMessageHandler();
 			if (host) {
 				try {
@@ -108,7 +111,7 @@ public class DrawingProtocol {
 				}
 			}
 		});
-		connection.setConnectionCheckCallback(p -> {
+		callbacks.connectionCheckCallback = (p -> {
 			dialog.promptForConfirmation(CONFIRM_PROMPT, "Verification Code: " + p.connectionInfo.getAuthenticationToken(), r -> {
 				if (r) {
 					dialog.setStatus(CONFIRM_WAIT, "Waiting for confirmation...");
@@ -163,7 +166,7 @@ public class DrawingProtocol {
 	 * Set the connection callback to a handler defining the protocol to follow.
 	 */
 	private void setupMessageHandler() {
-		PayloadCallback callback = new PayloadCallback() {
+		callbacks.payloadCallback = new PayloadCallback() {
 			@Override
 			public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
 				try {
@@ -203,8 +206,6 @@ public class DrawingProtocol {
 			
 			}
 		};
-		
-		connection.setPayloadCallback(callback);
 	}
 	
 	/**

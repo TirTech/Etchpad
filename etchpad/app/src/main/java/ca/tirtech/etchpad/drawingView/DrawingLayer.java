@@ -29,7 +29,8 @@ public class DrawingLayer extends LiveDataObservable {
 	private static final String JSON_X = "x";
 	private static final String JSON_Y = "y";
 	private static final String JSON_PATH = "path";
-	
+	private float[] transformation = new float[]{0f, 0f};
+	private float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();
 	
 	/**
@@ -38,9 +39,10 @@ public class DrawingLayer extends LiveDataObservable {
 	 * @param x starting x pos
 	 * @param y starting y pos
 	 */
-	public DrawingLayer(float x, float y) {
+	public DrawingLayer(float width, float height) {
 		super();
-		paths.push(new LayerPath(initPaint(Color.RED), x, y));
+		setScreenOrigin(width, height);
+		paths.push(new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
 	}
 	
 	/**
@@ -74,13 +76,47 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
+	 * Get the current transformation being applied to the layer.
+	 *
+	 * @return the current transformation
+	 */
+	@Bindable
+	public float[] getTransformation() {
+		return transformation;
+	}
+	
+	/**
+	 * Set the origin of the screen. Used for centring the pen.
+	 *
+	 * @param width  width
+	 * @param height height
+	 */
+	public void setScreenOrigin(float width, float height) {
+		screenOrigin[0] = width / 2;
+		screenOrigin[1] = height / 2;
+	}
+	
+	/**
+	 * Set the transformation to apply to this view.
+	 *
+	 * @param transformation the new transformation
+	 */
+	public void setTransformation(float[] transformation) {
+		this.transformation = transformation;
+		notifyPropertyChanged(BR.transformation);
+	}
+	
+	/**
 	 * Clears the layer, reverting to the default path.
 	 */
 	public void clear() {
 		Paint currentPaint = getCurrentLayerPath().paint;
 		this.paths.clear();
-		this.paths.push(new LayerPath(currentPaint, 1000, 500));
+		this.paths.push(new LayerPath(currentPaint, screenOrigin[0], screenOrigin[1]));
+		transformation[0] = 0;
+		transformation[1] = 0;
 		notifyPropertyChanged(BR.currentLayerPath);
+		notifyPropertyChanged(BR.transformation);
 	}
 	
 	/**
@@ -115,8 +151,10 @@ public class DrawingLayer extends LiveDataObservable {
 	 */
 	public void draw(Canvas canvas) {
 		for (LayerPath lp : paths) {
-			canvas.drawPath(lp.path, lp.paint);
+			canvas.drawPath(lp.getPathTranslated(transformation), lp.paint);
 		}
+		LayerPath cur = getCurrentLayerPath();
+		canvas.drawCircle(cur.x + transformation[0],cur.y + transformation[1],10,cur.paint);
 	}
 	
 	/**
@@ -205,7 +243,10 @@ public class DrawingLayer extends LiveDataObservable {
 		if (paths.size() > 1) {
 			paths.pop();
 		} else if (paths.size() == 1) {
-			paths.set(0, new LayerPath(initPaint(Color.RED), 1000, 500));
+			paths.set(0, new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
+			transformation[0] = 0;
+			transformation[1] = 0;
+			notifyPropertyChanged(BR.transformation);
 		}
 		notifyPropertyChanged(BR.currentLayerPath);
 	}
@@ -228,6 +269,18 @@ public class DrawingLayer extends LiveDataObservable {
 			this.x = x;
 			this.y = y;
 			this.paint = paint;
+		}
+		
+		/**
+		 * Get the path for this LayerPath translated by the given transform.
+		 *
+		 * @param translation the x,y translation to apply
+		 * @return the translated path
+		 */
+		public Path getPathTranslated(float[] translation) {
+			Path newPath = new Path();
+			path.offset(translation[0], translation[1], newPath);
+			return newPath;
 		}
 		
 		/**
