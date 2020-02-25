@@ -43,6 +43,12 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 	}
 	
 	@Override
+	public void setTransformation(float[] transformation) {
+		super.setTransformation(transformation);
+		networkedLayer.setTransformation(transformation);
+	}
+	
+	@Override
 	public void clear() {
 		super.clear();
 		protocol.createNetworkAction(ACTION_CLEAR, null);

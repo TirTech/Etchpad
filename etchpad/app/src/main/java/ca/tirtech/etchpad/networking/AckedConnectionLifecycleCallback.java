@@ -2,10 +2,7 @@ package ca.tirtech.etchpad.networking;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.core.util.Consumer;
 import com.google.android.gms.nearby.connection.*;
-
-import java.util.function.BiConsumer;
 
 /**
  * Class for hosting callbacks and managing the connection lifecycle through request, approval/rejection,
@@ -15,65 +12,31 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 	
 	private static String TAG = "AckedCLC";
 	private ConnectionsClient client;
-	private PayloadCallback payloadCallback;
-	private Consumer<String> onDisconnectCallback;
-	private BiConsumer<String, ConnectionResolution> onConnectionResultCallback;
-	private Consumer<PendingConnection> connectionCheckCallback;
+	private CallbackHelper callbacks;
 	
 	/**
 	 * Create a new instance for the given ConnectionClient.
 	 *
 	 * @param client the client to use
 	 */
-	public AckedConnectionLifecycleCallback(ConnectionsClient client) {
+	public AckedConnectionLifecycleCallback(ConnectionsClient client, CallbackHelper callbacks) {
 		this.client = client;
-	}
-	
-	/**
-	 * Set the callback to invoke when the connection is disconnected.
-	 *
-	 * @param onDisconnectCallback
-	 */
-	public void setOnDisconnectCallback(Consumer<String> onDisconnectCallback) {
-		this.onDisconnectCallback = onDisconnectCallback;
-	}
-	
-	
-	public void setOnConnectionResultCallback(BiConsumer<String, ConnectionResolution> onConnectionResultCallback) {
-		this.onConnectionResultCallback = onConnectionResultCallback;
-	}
-	
-	/**
-	 * Set the callback to invoke when messages are sent to this device over an active connection.
-	 *
-	 * @param payloadCallback the callback to set
-	 */
-	public void setPayloadCallback(PayloadCallback payloadCallback) {
-		this.payloadCallback = payloadCallback;
-	}
-	
-	/**
-	 * Set the callback to invoke to verify the connection is allowed before completing.
-	 *
-	 * @param connectionCheckCallback the callback to set
-	 */
-	public void setConnectionCheckCallback(Consumer<PendingConnection> connectionCheckCallback) {
-		this.connectionCheckCallback = connectionCheckCallback;
+		this.callbacks = callbacks;
 	}
 	
 	@Override
 	public void onConnectionInitiated(@NonNull String endpointId, @NonNull ConnectionInfo connectionInfo) {
-		connectionCheckCallback.accept(new PendingConnection(endpointId, connectionInfo));
+		callbacks.connectionCheckCallback.accept(new PendingConnection(endpointId, connectionInfo));
 	}
 	
 	@Override
 	public void onConnectionResult(@NonNull String endpointId, ConnectionResolution result) {
-		onConnectionResultCallback.accept(endpointId, result);
+		callbacks.onConnectionResultCallback.accept(endpointId, result);
 	}
 	
 	@Override
 	public void onDisconnected(@NonNull String endpointId) {
-		onDisconnectCallback.accept(endpointId);
+		callbacks.onDisconnectCallback.accept(endpointId);
 	}
 	
 	/**
@@ -110,12 +73,12 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 			client.acceptConnection(endpointId, new PayloadCallback() {
 				@Override
 				public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-					if (payloadCallback != null) payloadCallback.onPayloadReceived(s, payload);
+					if (callbacks.payloadCallback != null) callbacks.payloadCallback.onPayloadReceived(s, payload);
 				}
 				
 				@Override
 				public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
-					if (payloadCallback != null) payloadCallback.onPayloadTransferUpdate(s, payloadTransferUpdate);
+					if (callbacks.payloadCallback != null) callbacks.payloadCallback.onPayloadTransferUpdate(s, payloadTransferUpdate);
 				}
 			});
 			Log.i(TAG, "Connection Initiated on " + endpointId);

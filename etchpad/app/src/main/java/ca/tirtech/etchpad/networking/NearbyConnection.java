@@ -3,12 +3,9 @@ package ca.tirtech.etchpad.networking;
 import android.app.Activity;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.core.util.Consumer;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.*;
 import com.google.android.gms.tasks.Task;
-
-import java.util.function.BiConsumer;
 
 /**
  * Class for building and managing connections to other devices over the network, bluetooth, or NFC.
@@ -17,17 +14,16 @@ import java.util.function.BiConsumer;
  */
 public class NearbyConnection {
 	
-	private static final String SERVICE_ID = "ca.tirtech.testingapp";
+	private static final String SERVICE_ID = "ca.tirtech.etchpad";
 	private static final String TAG = "NearbyConnection";
 	
 	/**
 	 * The currently open endpoint.
 	 */
 	private String activeEndpoint;
-	private BiConsumer<String, ConnectionResolution> onConnectedCallback;
 	private AckedConnectionLifecycleCallback connectionLifecycleCallback;
-	private Consumer<String> connectionRejectedCallback;
 	private ConnectionsClient client;
+	private CallbackHelper callbacks;
 	
 	/**
 	 * Task for the last message sent. Used to ensure the connection is not closed
@@ -42,27 +38,19 @@ public class NearbyConnection {
 	 */
 	public NearbyConnection(Activity activity) {
 		client = Nearby.getConnectionsClient(activity);
-		connectionLifecycleCallback = new AckedConnectionLifecycleCallback(client);
-		connectionLifecycleCallback.setOnConnectionResultCallback(this::onConnectionResult);
-		connectionLifecycleCallback.setOnDisconnectCallback(this::onConnectionDisconnect);
+		callbacks = new CallbackHelper();
+		connectionLifecycleCallback = new AckedConnectionLifecycleCallback(client, callbacks);
+		callbacks.onConnectionResultCallback = this::onConnectionResult;
+		callbacks.onDisconnectCallback = this::onConnectionDisconnect;
 	}
 	
 	/**
-	 * Set the callback to invoke when messages are sent to this device over an active connection.
+	 * Get the callback helper used to act on lifecycles.
 	 *
-	 * @param payloadCallback the callback to set
+	 * @return the callback helper
 	 */
-	public void setPayloadCallback(PayloadCallback payloadCallback) {
-		connectionLifecycleCallback.setPayloadCallback(payloadCallback);
-	}
-	
-	/**
-	 * Set the callback to be invoked when the connection is established successfully.
-	 *
-	 * @param onConnectedCallback the callback to set
-	 */
-	public void setOnConnectedCallback(BiConsumer<String, ConnectionResolution> onConnectedCallback) {
-		this.onConnectedCallback = onConnectedCallback;
+	public CallbackHelper getCallbacks() {
+		return callbacks;
 	}
 	
 	/**
@@ -76,15 +64,6 @@ public class NearbyConnection {
 	}
 	
 	/**
-	 * Set the callback to be invoked when a requested connection is rejected.
-	 *
-	 * @param connectionRejectedCallback the callback to set
-	 */
-	public void setConnectionRejectedCallback(Consumer<String> connectionRejectedCallback) {
-		this.connectionRejectedCallback = connectionRejectedCallback;
-	}
-	
-	/**
 	 * Start discovering advertisers, requesting the first connection that is found.
 	 */
 	public void discover() {
@@ -93,7 +72,14 @@ public class NearbyConnection {
 			public void onEndpointFound(@NonNull String endpointId, @NonNull DiscoveredEndpointInfo info) {
 				client.requestConnection("Discoverer", endpointId, connectionLifecycleCallback)
 						.addOnSuccessListener(unused -> Log.i(TAG, "Connected to the discovered endpoint " + endpointId))
-						.addOnFailureListener(e -> Log.e(TAG, "Could not connect to the discovered endpoint" + endpointId));
+						.addOnFailureListener(e -> {
+							Log.e(TAG, "Could not connect to the discovered endpoint " + endpointId + "\n " +
+									"Error was: " + e.getMessage());
+							if (e.getMessage().contains("STATUS_BLUETOOTH_ERROR")) {
+								client.stopDiscovery();
+								discover();
+							}
+						});
 			}
 			
 			@Override
@@ -144,8 +130,8 @@ public class NearbyConnection {
 	}
 	
 	/**
-	 * Called when the connection status is resolved after being requested. The {@link #onConnectedCallback} or
-	 * {@link #connectionRejectedCallback} will be called based on the connection state.
+	 * Called when the connection status is resolved after being requested. The {@code onConnectedCallback} or
+	 * {@code connectionRejectedCallback} will be called based on the connection state.
 	 *
 	 * @param endpointId the endpoint of the connection
 	 * @param result     the result of the connection request
@@ -154,9 +140,9 @@ public class NearbyConnection {
 		if (result.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_OK) {
 			Log.i(TAG, "Connection OK on " + endpointId + ".");
 			activeEndpoint = endpointId;
-			if (onConnectedCallback != null) onConnectedCallback.accept(endpointId, result);
+			if (callbacks.onConnectedCallback != null) callbacks.onConnectedCallback.accept(endpointId, result);
 		} else if (result.getStatus().getStatusCode() == ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED) {
-			connectionRejectedCallback.accept(endpointId);
+			callbacks.connectionRejectedCallback.accept(endpointId);
 		}
 	}
 	
@@ -168,15 +154,5 @@ public class NearbyConnection {
 	private void onConnectionDisconnect(String endpointId) {
 		Log.i(TAG, "Connection disconnected on " + endpointId);
 		activeEndpoint = null;
-	}
-	
-	/**
-	 * Set the callback to invoke when a connection is requested. The callback will call either {@code success()} or
-	 * {@code fail()} on the PendingConnection to accept or reject the connection.
-	 *
-	 * @param connectionCheckCallback the callback to set
-	 */
-	public void setConnectionCheckCallback(Consumer<AckedConnectionLifecycleCallback.PendingConnection> connectionCheckCallback) {
-		connectionLifecycleCallback.setConnectionCheckCallback(connectionCheckCallback);
 	}
 }

@@ -86,6 +86,15 @@ public class DrawingModel extends AndroidViewModel {
 				InteractionService.getInstance().centerRotation();
 				return true;
 			}
+			
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+				DrawingLayer l = layer.getValue();
+				float[] oldT = l.getTransformation();
+				float[] dist = {oldT[0] - distanceX, oldT[1] - distanceY};
+				l.setTransformation(dist);
+				return true;
+			}
 		}));
 	}
 	
