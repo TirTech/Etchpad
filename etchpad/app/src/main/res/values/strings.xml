@@ -20,4 +20,20 @@
     <string name="model_load">Drawing loaded successfully</string>
     <string name="model_save">Drawing saved successfully</string>
     <string name="model_export">Image saved successfully</string>
+    <string name="action_help">Help</string>
+
+    <!-- HELP MENUS -->
+    <string name="help_card_about">About Etchpad</string>
+    <!-- HELP TEXTS -->
+    <string name="help_about">
+        About Etchpad
+
+        Authors:
+        Brandon Franklin
+        Shawn Norrie
+
+        Etchpad is a sketching application inspired by the Etch-A-Sketch.
+
+
+    </string>
 </resources>

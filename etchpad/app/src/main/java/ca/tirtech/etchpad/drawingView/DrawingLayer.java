@@ -36,8 +36,8 @@ public class DrawingLayer extends LiveDataObservable {
 	/**
 	 * Construct a blank layer. The pen on this layer will start at the provided {@code (x,y)} position.
 	 *
-	 * @param x starting x pos
-	 * @param y starting y pos
+	 * @param width  starting x pos
+	 * @param height starting y pos
 	 */
 	public DrawingLayer(float width, float height) {
 		super();

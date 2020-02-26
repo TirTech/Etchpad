@@ -82,6 +82,11 @@ public class MainActivity extends AppCompatActivity {
 				if (drawingProtocol != null) {
 					drawingProtocol.disconnect();
 				}
+				return true;
+			case R.id.action_help:
+				Intent help = new Intent(MainActivity.this, HelpActivity.class);
+				startActivity(help);
+				return true;
 		}
 		
 		return super.onOptionsItemSelected(item);
