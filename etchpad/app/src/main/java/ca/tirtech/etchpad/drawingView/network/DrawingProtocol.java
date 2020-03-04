@@ -1,6 +1,8 @@
 package ca.tirtech.etchpad.drawingView.network;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.LocationManager;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import ca.tirtech.etchpad.R;
@@ -24,11 +26,12 @@ public class DrawingProtocol {
 	
 	private static final int WAITING = 1;
 	private static final int CONFIRM_PROMPT = 2;
-	private static final int CONFIRM_WAIT = 3;
-	private static final int SYNC_START = 4;
-	private static final int SYNC_SEND = 5;
-	private static final int SYNC_DONE = 6;
-	private static final int MAX_STAGE = 6;
+	private static final int PROMPT_NICKNAME = 3;
+	private static final int CONFIRM_WAIT = 4;
+	private static final int SYNC_START = 5;
+	private static final int SYNC_SEND = 6;
+	private static final int SYNC_DONE = 7;
+	private static final int MAX_STAGE = 8;
 	
 	private static final String TAG = "Drawing Protocol";
 	private JSONObject newModel = null;
@@ -38,6 +41,8 @@ public class DrawingProtocol {
 	private DrawingModel model;
 	private DrawingSyncDialog dialog;
 	private Activity activity;
+	private LocationManager lm;
+	private String nickname;
 	
 	/**
 	 * Create a drawing protocol to provide syncing with the given model.
@@ -48,6 +53,7 @@ public class DrawingProtocol {
 	public DrawingProtocol(Activity activity, DrawingModel model) {
 		this.model = model;
 		this.activity = activity;
+		lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 		this.connection = new NearbyConnection(activity);
 		callbacks = connection.getCallbacks();
 	}
@@ -60,7 +66,19 @@ public class DrawingProtocol {
 	 * @throws JSONException JSON was invalid
 	 */
 	private static JSONObject toJson(Payload payload) throws JSONException {
-		return new JSONObject(new String(payload.asBytes()));
+		if (payload == null) return new JSONObject();
+		byte[] bytes = payload.asBytes();
+		if (bytes == null) return new JSONObject();
+		else return new JSONObject(new String(bytes));
+	}
+	
+	/**
+	 * Check that location is enabled. Required for Nearby Connections
+	 *
+	 * @return whether location is enabled
+	 */
+	private boolean isLocationEnabled() {
+		return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 	}
 	
 	/**
@@ -88,6 +106,10 @@ public class DrawingProtocol {
 	 * @param cancelId         the message to show on the snackbar when waiting is cancelled
 	 */
 	private void startCommunication(int waitingMessageId, int titleId, int cancelId) {
+		if (!isLocationEnabled()) {
+			model.sendSnackbarMessage(R.string.snack_no_location);
+			return;
+		}
 		dialog = new DrawingSyncDialog(activity, titleId, MAX_STAGE);
 		dialog.setStatusWithCancel(WAITING, activity.getString(waitingMessageId), (v) -> {
 			dialog.close();
@@ -109,16 +131,18 @@ public class DrawingProtocol {
 				}
 			}
 		});
-		callbacks.connectionCheckCallback = (p -> {
-			dialog.promptForConfirmation(CONFIRM_PROMPT, "Verification Code: " + p.connectionInfo.getAuthenticationToken(), r -> {
-				if (r) {
-					dialog.setStatus(CONFIRM_WAIT, "Waiting for confirmation...");
-					p.success();
-				} else {
-					p.failed();
-				}
-			});
-		});
+		callbacks.connectionCheckCallback = (p ->
+				dialog.promptForConfirmation(CONFIRM_PROMPT, "Verification Code: " + p.connectionInfo.getAuthenticationToken(), r -> {
+					if (r) {
+						dialog.promptForValue(PROMPT_NICKNAME, "Choose a nickname to display", v -> {
+							this.nickname = v;
+							dialog.setStatus(CONFIRM_WAIT, "Waiting for confirmation...");
+							p.success();
+						});
+					} else {
+						p.failed();
+					}
+				}));
 		if (host) connection.advertise();
 		else connection.discover();
 	}
@@ -234,6 +258,7 @@ public class DrawingProtocol {
 			connection.sendMessage(newPayload.toString());
 		}
 		model.getLayer().setValue(new NetworkedDrawingLayer(this, model.getLayer().getValue(), newModel));
+		model.getLayer().getValue().setNickname(nickname);
 		dialog.close();
 		model.sendSnackbarMessage(R.string.snack_connected);
 	}

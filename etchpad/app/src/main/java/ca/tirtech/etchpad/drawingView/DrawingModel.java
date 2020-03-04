@@ -20,7 +20,6 @@ import android.widget.EditText;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.colors.ColorPalette;
@@ -28,6 +27,7 @@ import ca.tirtech.etchpad.hardware.FileUtils;
 import ca.tirtech.etchpad.hardware.InteractionService;
 import ca.tirtech.etchpad.mvvm.DeepLiveData;
 import ca.tirtech.etchpad.mvvm.Event;
+import ca.tirtech.etchpad.mvvm.NonNullLiveData;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,12 +47,12 @@ public class DrawingModel extends AndroidViewModel {
 	private static final String TAG = "Drawing Model";
 	private final SharedPreferences sharedPreferences;
 	private final DeepLiveData<DrawingLayer> layer;
-	private final MutableLiveData<Integer> sensitivityPitch;
-	private final MutableLiveData<Integer> sensitivityRoll;
-	private final MutableLiveData<Boolean> lockMovement;
-	private final MutableLiveData<Boolean> shakeLock;
+	private final NonNullLiveData<Integer> sensitivityPitch;
+	private final NonNullLiveData<Integer> sensitivityRoll;
+	private final NonNullLiveData<Boolean> lockMovement;
+	private final NonNullLiveData<Boolean> shakeLock;
 	private final DeepLiveData<ColorPalette> colorPalette;
-	private final MutableLiveData<Event<Integer>> snackbarMessage;
+	private final NonNullLiveData<Event<Integer>> snackbarMessage;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
 	private float[] screenSize = new float[]{0, 0};
 	
@@ -63,22 +63,27 @@ public class DrawingModel extends AndroidViewModel {
 	 */
 	public DrawingModel(Application application) {
 		super(application);
+		
 		screenSize[0] = Resources.getSystem().getDisplayMetrics().widthPixels;
 		screenSize[1] = Resources.getSystem().getDisplayMetrics().heightPixels;
+		
+		// LiveData setup
+		lockMovement = new NonNullLiveData<>(false);
+		shakeLock = new NonNullLiveData<>(false);
+		layer = new DeepLiveData<>(new DrawingLayer(screenSize[0], screenSize[1]));
+		sensitivityPitch = new NonNullLiveData<>(0);
+		sensitivityRoll = new NonNullLiveData<>(0);
+		colorPalette = new DeepLiveData<>(new ColorPalette());
+		Event<Integer> e = new Event<>(0);
+		e.consume();
+		snackbarMessage = new NonNullLiveData<>(e);
+		
+		// Prefs
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
 		sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> loadPreferences());
-		lockMovement = new MutableLiveData<>();
-		shakeLock = new MutableLiveData<>();
-		layer = new DeepLiveData<>();
-		sensitivityPitch = new MutableLiveData<>();
-		sensitivityRoll = new MutableLiveData<>();
-		colorPalette = new DeepLiveData<>();
-		snackbarMessage = new MutableLiveData<>();
-		lockMovement.setValue(false);
-		shakeLock.setValue(false);
-		layer.setValue(new DrawingLayer(screenSize[0], screenSize[1]));
-		colorPalette.setValue(new ColorPalette());
 		loadPreferences();
+		
+		// Interactions
 		InteractionService.getInstance().setOnRotation(this::onRotation);
 		InteractionService.getInstance().setOnShake(this::onShake);
 		InteractionService.getInstance().addGestureDetector(new GestureDetector(getApplication(), new GestureDetector.SimpleOnGestureListener() {
@@ -120,7 +125,7 @@ public class DrawingModel extends AndroidViewModel {
 	 *
 	 * @return the LiveData
 	 */
-	public MutableLiveData<Event<Integer>> getSnackbarMessage() {
+	public NonNullLiveData<Event<Integer>> getSnackbarMessage() {
 		return snackbarMessage;
 	}
 	
@@ -287,7 +292,7 @@ public class DrawingModel extends AndroidViewModel {
 	 *
 	 * @return the current drawing layer
 	 */
-	public MutableLiveData<DrawingLayer> getLayer() {
+	public NonNullLiveData<DrawingLayer> getLayer() {
 		return layer;
 	}
 	
@@ -319,7 +324,7 @@ public class DrawingModel extends AndroidViewModel {
 			shakeLock.setValue(false);
 		}
 		
-		if (shakeCount >= 2 && layer.getValue() != null && !shakeLock.getValue()) {
+		if (shakeCount >= 2 && !shakeLock.getValue()) {
 			layer.getValue().undo();
 			shakeLock.setValue(true);
 		}

@@ -23,6 +23,7 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 	private static final String ACTION_LINE_TO = "LINETO";
 	private static final String ACTION_SET_COLOR = "SETCOLOR";
 	private static final String ACTION_UNDO = "UNDO";
+	private static final String ACTION_NICKNAME = "NICKNAME";
 	
 	private DrawingProtocol protocol;
 	private DrawingLayer networkedLayer;
@@ -87,6 +88,14 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 		protocol.createNetworkAction(ACTION_UNDO, null);
 	}
 	
+	@Override
+	public void setNickname(String nickname) {
+		super.setNickname(nickname);
+		JSONArray json = new JSONArray();
+		json.put(nickname);
+		protocol.createNetworkAction(ACTION_NICKNAME, json);
+	}
+	
 	/**
 	 * Handle a received network message with a specified action and data. Actions are
 	 * performed against the {@link #networkedLayer};
@@ -108,6 +117,9 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 				break;
 			case ACTION_UNDO:
 				networkedLayer.undo();
+				break;
+			case ACTION_NICKNAME:
+				networkedLayer.setNickname(value.getString(0));
 				break;
 		}
 		notifyChange();

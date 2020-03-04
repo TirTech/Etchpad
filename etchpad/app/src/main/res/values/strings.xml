@@ -21,6 +21,7 @@
     <string name="model_save">Drawing saved successfully</string>
     <string name="model_export">Image saved successfully</string>
     <string name="action_help">Help</string>
+    <string name="snack_no_location">Location must be enabled to Host/Join</string>
 
     <!-- HELP MENUS -->
     <string name="help_card_about">About Etchpad</string>
