@@ -6,30 +6,35 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import ca.tirtech.etchpad.drawingView.DrawingView;
 import ca.tirtech.etchpad.drawingView.network.DrawingProtocol;
 import ca.tirtech.etchpad.hardware.InteractionService;
+import ca.tirtech.etchpad.hardware.PermissionManager;
+import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Main app activity. Contains the drawing view and menus.
  */
 public class MainActivity extends AppCompatActivity {
 	
+	private PermissionManager permissionManager;
 	private static final String TAG = "Main";
 	private DrawingView drawView;
 	private DrawingProtocol drawingProtocol;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
 		super.onCreate(savedInstanceState);
 		InteractionService.init(this);
 		setContentView(R.layout.activity_main);
-		Toolbar toolbar = findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.help_toolbar);
 		setSupportActionBar(toolbar);
 		drawView = findViewById(R.id.drawingView);
+		permissionManager = new PermissionManager(v -> Snackbar.make(drawView, "Permissions ok", Snackbar.LENGTH_LONG).show());
+		permissionManager.checkAllPermissions(this);
 	}
 	
 	@Override
@@ -82,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
 				if (drawingProtocol != null) {
 					drawingProtocol.disconnect();
 				}
+				return true;
+			case R.id.action_help:
+				Intent help = new Intent(MainActivity.this, HelpActivity.class);
+				startActivity(help);
+				return true;
 		}
 		
 		return super.onOptionsItemSelected(item);
@@ -97,4 +107,8 @@ public class MainActivity extends AppCompatActivity {
 		InteractionService.disable();
 	}
 	
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		permissionManager.onPermissionCallback(requestCode, permissions, grantResults);
+	}
 }

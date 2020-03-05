@@ -32,17 +32,19 @@ public class DrawingLayer extends LiveDataObservable {
 	private float[] transformation = new float[]{0f, 0f};
 	private float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();
+	private static final Paint textPaint = initPaint(Color.BLACK, 1f, Paint.Style.FILL_AND_STROKE);
+	private String nickname = "";
 	
 	/**
 	 * Construct a blank layer. The pen on this layer will start at the provided {@code (x,y)} position.
 	 *
-	 * @param x starting x pos
-	 * @param y starting y pos
+	 * @param width  starting x pos
+	 * @param height starting y pos
 	 */
 	public DrawingLayer(float width, float height) {
 		super();
 		setScreenOrigin(width, height);
-		paths.push(new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
+		paths.push(new LayerPath(initPaint(Color.RED, 5f), screenOrigin[0], screenOrigin[1]));
 	}
 	
 	/**
@@ -73,6 +75,17 @@ public class DrawingLayer extends LiveDataObservable {
 	@SuppressWarnings ("CopyConstructorMissesField")
 	public DrawingLayer(DrawingLayer layer) throws JSONException {
 		this(layer.jsonify());
+	}
+	
+	/**
+	 * Create a new {@link Paint}.
+	 *
+	 * @param color  the color of the paint
+	 * @param stroke the weight of the stroke
+	 * @return a new {@link Paint} with the specified color
+	 */
+	private static Paint initPaint(int color, float stroke) {
+		return initPaint(color, stroke, Paint.Style.STROKE);
 	}
 	
 	/**
@@ -122,21 +135,35 @@ public class DrawingLayer extends LiveDataObservable {
 	/**
 	 * Create a new {@link Paint}.
 	 *
-	 * @param color the color of the paint
+	 * @param color  the color of the paint
+	 * @param stroke the weight of the stroke
+	 * @param style  the style of paint to use
 	 * @return a new {@link Paint} with the specified color
 	 */
-	private Paint initPaint(int color) {
+	private static Paint initPaint(int color, float stroke, Paint.Style style) {
 		Paint paint = new Paint();
 		paint.setAntiAlias(false);
 		paint.setColor(color);
 		paint.setStrokeJoin(Paint.Join.BEVEL);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(5f);
+		paint.setStyle(style);
+		paint.setStrokeWidth(stroke);
+		paint.setTextSize(24);
+		paint.setTextAlign(Paint.Align.CENTER);
 		return paint;
 	}
 	
 	/**
+	 * Set the nickname displayed above the cursor.
+	 *
+	 * @param nickname the name to display
+	 */
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+	
+	/**
 	 * Get the color of the current path.
+	 *
 	 * @return the current path's paint's color
 	 */
 	@Bindable
@@ -154,7 +181,8 @@ public class DrawingLayer extends LiveDataObservable {
 			canvas.drawPath(lp.getPathTranslated(transformation), lp.paint);
 		}
 		LayerPath cur = getCurrentLayerPath();
-		canvas.drawCircle(cur.x + transformation[0],cur.y + transformation[1],10,cur.paint);
+		canvas.drawCircle(cur.x + transformation[0], cur.y + transformation[1], 10, cur.paint);
+		canvas.drawText(nickname,cur.x + transformation[0], cur.y + transformation[1]-30, textPaint);
 	}
 	
 	/**
@@ -232,7 +260,7 @@ public class DrawingLayer extends LiveDataObservable {
 	 */
 	public void setColor(int color) {
 		LayerPath cur = getCurrentLayerPath();
-		paths.push(new LayerPath(initPaint(color), cur.x, cur.y));
+		paths.push(new LayerPath(initPaint(color, 5f), cur.x, cur.y));
 		notifyPropertyChanged(BR.currentPaintColor);
 	}
 	
@@ -243,7 +271,7 @@ public class DrawingLayer extends LiveDataObservable {
 		if (paths.size() > 1) {
 			paths.pop();
 		} else if (paths.size() == 1) {
-			paths.set(0, new LayerPath(initPaint(Color.RED), screenOrigin[0], screenOrigin[1]));
+			paths.set(0, new LayerPath(initPaint(Color.RED, 5f), screenOrigin[0], screenOrigin[1]));
 			transformation[0] = 0;
 			transformation[1] = 0;
 			notifyPropertyChanged(BR.transformation);
@@ -255,7 +283,7 @@ public class DrawingLayer extends LiveDataObservable {
 	 * A container for settings defining a {@link Path} with a color and current position (head).
 	 * Used as a substitute for {@link Pair}s of {@link Path}s and {@link Paint}s
 	 */
-	private class LayerPath {
+	private static class LayerPath {
 		Path path;
 		Paint paint;
 		ArrayList<Pair<Float, Float>> pathPoints = new ArrayList<>();
@@ -329,7 +357,7 @@ public class DrawingLayer extends LiveDataObservable {
 			this.pathPoints = new ArrayList<>();
 			this.path = new Path();
 			
-			this.paint = initPaint(root.getInt(JSON_PAINT_COLOR));
+			this.paint = initPaint(root.getInt(JSON_PAINT_COLOR), 5f);
 			this.y = (float) root.getDouble(JSON_Y);
 			this.x = (float) root.getDouble(JSON_X);
 			JSONArray points = root.getJSONArray(JSON_PATH);

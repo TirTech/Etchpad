@@ -77,7 +77,7 @@ public class NearbyConnection {
 									"Error was: " + e.getMessage());
 							if (e.getMessage().contains("STATUS_BLUETOOTH_ERROR")) {
 								client.stopDiscovery();
-								discover();
+								disconnect();
 							}
 						});
 			}

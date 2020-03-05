@@ -1,5 +1,6 @@
 package ca.tirtech.etchpad.mvvm;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 /**
@@ -13,7 +14,17 @@ import androidx.lifecycle.MutableLiveData;
  * @param <T>
  */
 public class DeepLiveData<T extends LiveDataObservable>
-		extends MutableLiveData<T> {
+		extends NonNullLiveData<T> {
+	
+	/**
+	 * Create a new LiveData instance.
+	 *
+	 * @param initialValue the initial value to set
+	 */
+	public DeepLiveData(@NonNull T initialValue) {
+		super(initialValue);
+		setValue(getValue());
+	}
 	
 	/**
 	 * Sets the value. If there are active observers, the value will be dispatched to them.
@@ -21,16 +32,13 @@ public class DeepLiveData<T extends LiveDataObservable>
 	 * Values assigned using this function will be bound to. When changed, all active observers will be notified.
 	 * <p>
 	 * Old values will be unbound only when replaced with another {@link LiveDataObservable} or {@code null}.
+	 *
 	 * @param value The new value
 	 */
 	@Override
-	public void setValue(T value) {
-		if (getValue() != null) {
-			getValue().removeCallback();
-		}
+	public void setValue(@NonNull T value) {
+		getValue().removeCallback();
 		super.setValue(value);
-		if (getValue() != null) {
-			getValue().addCallback((s, p) -> setValue(getValue()));
-		}
+		getValue().addCallback((s, p) -> setValue(getValue()));
 	}
 }
