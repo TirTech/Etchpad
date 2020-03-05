@@ -36,12 +36,12 @@ public class DrawingProtocol {
 	private static final String TAG = "Drawing Protocol";
 	private JSONObject newModel = null;
 	private boolean host = false;
-	private NearbyConnection connection;
-	private CallbackHelper callbacks;
-	private DrawingModel model;
+	private final NearbyConnection connection;
+	private final CallbackHelper callbacks;
+	private final DrawingModel model;
 	private DrawingSyncDialog dialog;
-	private Activity activity;
-	private LocationManager lm;
+	private final Activity activity;
+	private final LocationManager lm;
 	private String nickname;
 	
 	/**

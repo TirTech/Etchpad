@@ -6,12 +6,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
 import androidx.core.util.Consumer;
 import androidx.preference.PreferenceManager;
 
 import static android.content.Context.SENSOR_SERVICE;
 
+/**
+ * Manages rotation vector events to notify about rotation changes.
+ */
 public class RotationManager implements SensorEventListener {
 	
 	private static final String TAG = "Rotation Manager";
@@ -23,6 +25,11 @@ public class RotationManager implements SensorEventListener {
 	private float[] baseRotMatrix = null;
 	private float deadzone;
 	
+	/**
+	 * Construct a new manager for the given context.
+	 *
+	 * @param owner the context for this manager
+	 */
 	public RotationManager(Context owner) {
 		sensorManager = (SensorManager) owner.getSystemService(SENSOR_SERVICE);
 		rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -30,17 +37,27 @@ public class RotationManager implements SensorEventListener {
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(owner);
 	}
 	
+	/**
+	 * Set the listener to invoke when a rotation is detected. Will be given the pitch, roll, and azimuth of the rotation.
+	 *
+	 * @param rotationListener the listener for rotation events
+	 */
 	public void setRotationListener(Consumer<float[]> rotationListener) {
 		this.rotationListener = rotationListener;
 	}
 	
+	/**
+	 * Start listening for rotation events. This will register sensor listeners.
+	 */
 	public void start() {
 		sensorManager.registerListener(this, rotationVector, SensorManager.SENSOR_DELAY_GAME);
 		baseRotMatrix = null;
 		this.deadzone = sharedPreferences.getInt("pen_deadzone", 10) / 1000.0f;
-		Log.i(TAG, "Deadzone is " + deadzone);
 	}
 	
+	/**
+	 * Stop listening for rotation events. This will deregister sensor listeners.
+	 */
 	public void stop() {
 		sensorManager.unregisterListener(this);
 		baseRotMatrix = null;
@@ -70,6 +87,12 @@ public class RotationManager implements SensorEventListener {
 		}
 	}
 	
+	/**
+	 * Convert the raw quaternion into relatively centred euler angles for pitch, roll, and azimuth.
+	 *
+	 * @param vector raw rotation angles
+	 * @return angles from the baseline
+	 */
 	private float[] getRelativeRotation(float[] vector) {
 		float[] newVector = new float[3];
 		float[] rotMatrix = new float[9];

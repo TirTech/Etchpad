@@ -21,9 +21,9 @@ public class NearbyConnection {
 	 * The currently open endpoint.
 	 */
 	private String activeEndpoint;
-	private AckedConnectionLifecycleCallback connectionLifecycleCallback;
-	private ConnectionsClient client;
-	private CallbackHelper callbacks;
+	private final AckedConnectionLifecycleCallback connectionLifecycleCallback;
+	private final ConnectionsClient client;
+	private final CallbackHelper callbacks;
 	
 	/**
 	 * Task for the last message sent. Used to ensure the connection is not closed
@@ -75,8 +75,7 @@ public class NearbyConnection {
 						.addOnFailureListener(e -> {
 							Log.e(TAG, "Could not connect to the discovered endpoint " + endpointId + "\n " +
 									"Error was: " + e.getMessage());
-							if (e.getMessage().contains("STATUS_BLUETOOTH_ERROR")) {
-								client.stopDiscovery();
+							if (e.getMessage() != null && e.getMessage().contains("STATUS_BLUETOOTH_ERROR")) {
 								disconnect();
 							}
 						});

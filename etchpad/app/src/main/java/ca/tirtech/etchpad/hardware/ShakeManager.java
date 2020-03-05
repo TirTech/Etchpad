@@ -10,6 +10,9 @@ import androidx.core.util.Consumer;
 
 import static android.content.Context.SENSOR_SERVICE;
 
+/**
+ * Manages device rotation and accelerations in order to provide shake-based interactions.
+ */
 public class ShakeManager implements SensorEventListener {
 	
 	private static final String TAG = "Shake Manager";
@@ -23,16 +26,31 @@ public class ShakeManager implements SensorEventListener {
 	private int shakeCount = 0;
 	private Consumer<Integer> shakeListener;
 	
+	/**
+	 * Construct a new ShakeManager for the given context.
+	 *
+	 * @param owner the context for the manager
+	 */
 	public ShakeManager(Context owner) {
 		sensorManager = (SensorManager) owner.getSystemService(SENSOR_SERVICE);
 		accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
+	/**
+	 * Set the listener to invoke when a shake is detected. It will be passed the number of concurrent shakes.
+	 *
+	 * @param shakeListener the listener to set
+	 */
 	public void setShakeListener(Consumer<Integer> shakeListener) {
 		this.shakeListener = shakeListener;
 	}
 	
+	/**
+	 * Handle acceleration events to detect shakes.
+	 *
+	 * @param event the sensor event
+	 */
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			double gX = event.values[0] / SensorManager.GRAVITY_EARTH;
@@ -59,10 +77,16 @@ public class ShakeManager implements SensorEventListener {
 		}
 	}
 	
+	/**
+	 * Start observing shakes. This will enable sensor listeners.
+	 */
 	public void start() {
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
+	/**
+	 * Stop observing shakes. This will unregister sensor listeners.
+	 */
 	public void stop() {
 		sensorManager.unregisterListener(this);
 	}

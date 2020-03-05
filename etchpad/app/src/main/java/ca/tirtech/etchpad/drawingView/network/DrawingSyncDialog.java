@@ -11,6 +11,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Consumer;
 import ca.tirtech.etchpad.R;
 
+/**
+ * Class used for displaying the status of remote connection establishment. This class does not contain any lifecycle but rather provides methods
+ * for displaying lifecycle status and prompting user responses.
+ */
 public class DrawingSyncDialog {
 	
 	private ProgressBar syncProgress;
@@ -18,11 +22,14 @@ public class DrawingSyncDialog {
 	private TextView txtMessage;
 	private EditText txtPrompt;
 	
+	/**
+	 * Create a dialog for the given context with a max progress amount.
+	 *
+	 * @param context the context to display this dialog in
+	 * @param titleId the title of the dialog
+	 * @param max     the max progress to display in the progress bar
+	 */
 	public DrawingSyncDialog(Context context, int titleId, int max) {
-		createSyncDialog(context, titleId, max);
-	}
-	
-	private void createSyncDialog(Context context, int titleId, int max) {
 		dialog = new AlertDialog.Builder(context)
 				.setView(R.layout.sync_dialog)
 				.setTitle(titleId)
@@ -34,11 +41,17 @@ public class DrawingSyncDialog {
 		syncProgress = dialog.findViewById(R.id.pb_sync_progress);
 		txtMessage = dialog.findViewById(R.id.txt_message);
 		txtPrompt = dialog.findViewById(R.id.txt_prompt);
-		txtPrompt.setVisibility(View.GONE);
+		if (txtPrompt != null) txtPrompt.setVisibility(View.GONE);
 		syncProgress.setMax(max);
 		syncProgress.setProgress(0);
 	}
 	
+	/**
+	 * Set the status message and progress of the dialog.
+	 *
+	 * @param progress the current progress
+	 * @param message  the message to display
+	 */
 	public void setStatus(int progress, String message) {
 		txtMessage.setText(message);
 		syncProgress.setProgress(progress);
@@ -49,6 +62,13 @@ public class DrawingSyncDialog {
 		btnPos.setVisibility(View.GONE);
 	}
 	
+	/**
+	 * Set the status of the dialog, and allow the user to press "Cancel".
+	 *
+	 * @param progress the progress to set
+	 * @param message  the message to display
+	 * @param onAction the callback for when cancel is pressed
+	 */
 	public void setStatusWithCancel(int progress, String message, Consumer<View> onAction) {
 		txtMessage.setText(message);
 		syncProgress.setProgress(progress);
@@ -61,6 +81,13 @@ public class DrawingSyncDialog {
 		btnNeg.setOnClickListener(onAction::accept);
 	}
 	
+	/**
+	 * Set the progress and message and allow the user to enter a value in a text field.
+	 *
+	 * @param progress the progress to set
+	 * @param message  the message to display
+	 * @param onAction the consumer for the entered value
+	 */
 	public void promptForValue(int progress, String message, Consumer<String> onAction) {
 		syncProgress.setProgress(progress);
 		txtMessage.setText(message);
@@ -71,6 +98,13 @@ public class DrawingSyncDialog {
 		btnPos.setOnClickListener((v) -> onAction.accept(txtPrompt.getText().toString()));
 	}
 	
+	/**
+	 * Set the progress and message and allow the user to choose "Yes" or "No". The message should be phrased as a question.
+	 *
+	 * @param progress the progress to set
+	 * @param message  the question to ask
+	 * @param onAction the consumer for the user's response; true if yes
+	 */
 	public void promptForConfirmation(int progress, String message, Consumer<Boolean> onAction) {
 		syncProgress.setProgress(progress);
 		txtMessage.setText(message);
@@ -87,6 +121,9 @@ public class DrawingSyncDialog {
 		btnNeg.setOnClickListener((v) -> onAction.accept(false));
 	}
 	
+	/**
+	 * Dismiss the dialog.
+	 */
 	public void close() {
 		dialog.dismiss();
 	}

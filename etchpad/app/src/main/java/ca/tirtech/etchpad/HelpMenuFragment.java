@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RawRes;
 import androidx.annotation.StringRes;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -35,13 +36,13 @@ public class HelpMenuFragment extends Fragment {
 	 * @param title the id of the title text
 	 * @param text  the id of the body text
 	 */
-	private void navigateToHelp(@StringRes int title, @StringRes int text) {
+	private void navigateToHelp(@StringRes int title, @RawRes int text) {
 		Bundle arguments = new Bundle();
 		arguments.putInt(HelpDetailFragment.ARG_TITLE_ID, title);
 		arguments.putInt(HelpDetailFragment.ARG_ITEM_ID, text);
 		HelpDetailFragment fragment = new HelpDetailFragment();
 		fragment.setArguments(arguments);
-		((HelpActivity) getActivity()).changeFragment(fragment, true);
+		if (getActivity() != null) ((HelpActivity) getActivity()).changeFragment(fragment, true);
 	}
 	
 }
