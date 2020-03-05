@@ -29,6 +29,8 @@ public class DrawingSyncDialog {
 				.setPositiveButton("TEST", null)
 				.setNegativeButton("TEST", null)
 				.show();
+		dialog.setCanceledOnTouchOutside(false);
+		dialog.setCancelable(false);
 		syncProgress = dialog.findViewById(R.id.pb_sync_progress);
 		txtMessage = dialog.findViewById(R.id.txt_message);
 		txtPrompt = dialog.findViewById(R.id.txt_prompt);

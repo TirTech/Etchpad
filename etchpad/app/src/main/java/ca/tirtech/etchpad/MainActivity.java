@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		InteractionService.init(this);
 		setContentView(R.layout.activity_main);
-		Toolbar toolbar = findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.help_toolbar);
 		setSupportActionBar(toolbar);
 		drawView = findViewById(R.id.drawingView);
 		permissionManager = new PermissionManager(v -> Snackbar.make(drawView, "Permissions ok", Snackbar.LENGTH_LONG).show());
