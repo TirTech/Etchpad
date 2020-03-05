@@ -28,11 +28,11 @@ public class HelpDetailFragment extends Fragment {
 	/**
 	 * The resource id of the item to show.
 	 */
-	public static String ARG_ITEM_ID = "Item";
+	public static final String ARG_ITEM_ID = "Item";
 	/**
 	 * The resource id of the title to show.
 	 */
-	public static String ARG_TITLE_ID = "Title";
+	public static final String ARG_TITLE_ID = "Title";
 	
 	@RawRes
 	private int resId;
@@ -41,7 +41,7 @@ public class HelpDetailFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID) && getArguments().containsKey(ARG_TITLE_ID)) {
+		if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID) && getArguments().containsKey(ARG_TITLE_ID) && getActivity() != null) {
 			resId = getArguments().getInt(ARG_ITEM_ID);
 			Toolbar appBarLayout = getActivity().findViewById(R.id.help_toolbar);
 			if (appBarLayout != null) {
@@ -56,20 +56,17 @@ public class HelpDetailFragment extends Fragment {
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 		View root = inflater.inflate(R.layout.fragment_help_detail, container, false);
-		if (resId != -1) {
-			BufferedReader in = null;
+		if (resId != -1 && getContext() != null) {
 			TextView view = root.findViewById(R.id.txt_help_details);
-			in = new BufferedReader(new InputStreamReader(getResources().openRawResource(resId)));
+			BufferedReader in = new BufferedReader(new InputStreamReader(getResources().openRawResource(resId)));
 			String data = in.lines().reduce("", (acc, v) -> acc + v + "\n");
 			Markwon mw = Markwon.create(getContext());
 			Spanned text = mw.toMarkdown(data);
 			view.setText(text);
 			try {
-				if (in != null) {
-					in.close();
-				}
+				in.close();
 			} catch (IOException e) {
-				Log.e(TAG, e.getMessage());
+				Log.e(TAG, "An error occurred closing a reader: " + (e.getMessage() != null ? e.getMessage() : "Unknown"));
 			}
 		}
 		return root;

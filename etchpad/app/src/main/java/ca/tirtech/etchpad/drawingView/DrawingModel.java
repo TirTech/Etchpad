@@ -54,7 +54,6 @@ public class DrawingModel extends AndroidViewModel {
 	private final DeepLiveData<ColorPalette> colorPalette;
 	private final NonNullLiveData<Event<Integer>> snackbarMessage;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
-	private float[] screenSize = new float[]{0, 0};
 	
 	/**
 	 * Construct a new model given the current application.
@@ -64,8 +63,10 @@ public class DrawingModel extends AndroidViewModel {
 	public DrawingModel(Application application) {
 		super(application);
 		
-		screenSize[0] = Resources.getSystem().getDisplayMetrics().widthPixels;
-		screenSize[1] = Resources.getSystem().getDisplayMetrics().heightPixels;
+		float[] screenSize = new float[]{
+				Resources.getSystem().getDisplayMetrics().widthPixels,
+				Resources.getSystem().getDisplayMetrics().heightPixels
+		};
 		
 		// LiveData setup
 		lockMovement = new NonNullLiveData<>(false);

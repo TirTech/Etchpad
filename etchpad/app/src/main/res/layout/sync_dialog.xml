@@ -16,7 +16,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:id="@+id/txt_prompt" android:inputType="text" android:hint="nickname" android:singleLine="true" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@id/pb_sync_progress" android:layout_marginStart="10dp" android:layout_marginEnd="10dp"/>
+                android:id="@+id/txt_prompt" android:inputType="text" android:hint="nickname" android:singleLine="true" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toTopOf="@id/pb_sync_progress" android:layout_marginStart="10dp" android:layout_marginEnd="10dp" android:importantForAutofill="no"/>
         <ProgressBar
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="0dp"

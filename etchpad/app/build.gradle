@@ -27,7 +27,6 @@ android {
 
 dependencies {
     def lifecycle_version = "2.2.0"
-    final def  markwon_version =  'latest_version'
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.1.0'

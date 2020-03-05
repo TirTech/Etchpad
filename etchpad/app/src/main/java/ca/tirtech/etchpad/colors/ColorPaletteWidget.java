@@ -33,7 +33,7 @@ public class ColorPaletteWidget extends View {
 	/**
 	 * List of {@link Paint} objects used to display the colors.
 	 */
-	private ArrayList<Paint> paints = new ArrayList<>();
+	private final ArrayList<Paint> paints = new ArrayList<>();
 	
 	/**
 	 * Constructs a ColorPaletteWidget for the provided context.

@@ -54,7 +54,7 @@ public class DrawingView extends View {
 		model.setOrientation(getResources().getConfiguration().orientation);
 		model.getLayer().observe(activity, layer -> invalidate());
 		model.getSnackbarMessage().observe(activity, event -> {
-			if (!event.isHandled()) {
+			if (!event.isConsumed()) {
 				Snackbar.make(this, event.consume(), Snackbar.LENGTH_SHORT).show();
 			}
 		});
@@ -64,9 +64,8 @@ public class DrawingView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		canvas.drawColor(Color.WHITE);
-		if (model.getLayer().getValue() != null) {
-			model.getLayer().getValue().draw(canvas);
-		}
+		model.getLayer().getValue();
+		model.getLayer().getValue().draw(canvas);
 	}
 	
 	/**

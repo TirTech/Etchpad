@@ -10,14 +10,15 @@ import com.google.android.gms.nearby.connection.*;
  */
 public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallback {
 	
-	private static String TAG = "AckedCLC";
-	private ConnectionsClient client;
-	private CallbackHelper callbacks;
+	private static final String TAG = "AckedCLC";
+	private final ConnectionsClient client;
+	private final CallbackHelper callbacks;
 	
 	/**
 	 * Create a new instance for the given ConnectionClient.
 	 *
-	 * @param client the client to use
+	 * @param client    the client to use
+	 * @param callbacks the helper containing callbacks for this lifecycle
 	 */
 	public AckedConnectionLifecycleCallback(ConnectionsClient client, CallbackHelper callbacks) {
 		this.client = client;
@@ -30,7 +31,7 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 	}
 	
 	@Override
-	public void onConnectionResult(@NonNull String endpointId, ConnectionResolution result) {
+	public void onConnectionResult(@NonNull String endpointId, @NonNull ConnectionResolution result) {
 		callbacks.onConnectionResultCallback.accept(endpointId, result);
 	}
 	
@@ -48,12 +49,12 @@ public class AckedConnectionLifecycleCallback extends ConnectionLifecycleCallbac
 		/**
 		 * The endpoint being requested.
 		 */
-		public String endpointId;
+		public final String endpointId;
 		
 		/**
 		 * Details about the connection.
 		 */
-		public ConnectionInfo connectionInfo;
+		public final ConnectionInfo connectionInfo;
 		
 		/**
 		 * Create a new connection request.

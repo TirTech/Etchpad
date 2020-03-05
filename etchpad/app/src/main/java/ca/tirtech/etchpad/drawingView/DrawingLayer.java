@@ -30,7 +30,7 @@ public class DrawingLayer extends LiveDataObservable {
 	private static final String JSON_Y = "y";
 	private static final String JSON_PATH = "path";
 	private float[] transformation = new float[]{0f, 0f};
-	private float[] screenOrigin = new float[]{0, 0};
+	private final float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();
 	private static final Paint textPaint = initPaint(Color.BLACK, 1f, Paint.Style.FILL_AND_STROKE);
 	private String nickname = "";
