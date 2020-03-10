@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_main" app:startDestination="@id/drawingViewFragment">
+
+    <fragment android:id="@+id/drawingViewFragment" android:name="ca.tirtech.etchpad.fragments.DrawingViewFragment" android:label="DrawingViewFragment">
+        <action android:id="@+id/action_drawing_view_to_help" app:destination="@id/helpMenuFragment" app:enterAnim="@anim/fragment_open_enter" app:exitAnim="@anim/fragment_open_exit"/>
+        <action android:id="@+id/action_drawing_view_to_settings" app:destination="@id/settingsFragment" app:enterAnim="@anim/fragment_open_enter" app:exitAnim="@anim/fragment_open_exit"/>
+    </fragment>
+    <fragment android:id="@+id/helpMenuFragment" android:name="ca.tirtech.etchpad.fragments.HelpMenuFragment" android:label="fragment_help_list" tools:layout="@layout/fragment_help_list">
+        <action android:id="@+id/action_helpMenuFragment_to_helpDetailFragment" app:destination="@id/helpDetailFragment" app:enterAnim="@anim/fragment_open_enter" app:exitAnim="@anim/fragment_open_exit"/>
+    </fragment>
+    <fragment android:id="@+id/settingsFragment" android:name="ca.tirtech.etchpad.fragments.SettingsFragment" android:label="SettingsFragment"/>
+    <fragment android:id="@+id/helpDetailFragment" android:name="ca.tirtech.etchpad.fragments.HelpDetailFragment" android:label="fragment_help_detail" tools:layout="@layout/fragment_help_detail">
+        <argument android:name="Item" app:argType="reference"/>
+        <argument android:name="Title" app:argType="reference"/>
+    </fragment>
+</navigation>

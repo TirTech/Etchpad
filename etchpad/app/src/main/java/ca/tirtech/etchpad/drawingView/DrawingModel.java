@@ -54,6 +54,7 @@ public class DrawingModel extends AndroidViewModel {
 	private final DeepLiveData<ColorPalette> colorPalette;
 	private final NonNullLiveData<Event<Integer>> snackbarMessage;
 	private int orientation = Configuration.ORIENTATION_PORTRAIT;
+	private SharedPreferences.OnSharedPreferenceChangeListener prefListener = (sharedPreferences, key) -> loadPreferences();
 	
 	/**
 	 * Construct a new model given the current application.
@@ -81,7 +82,7 @@ public class DrawingModel extends AndroidViewModel {
 		
 		// Prefs
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application);
-		sharedPreferences.registerOnSharedPreferenceChangeListener((sharedPreferences, key) -> loadPreferences());
+		sharedPreferences.registerOnSharedPreferenceChangeListener(prefListener);
 		loadPreferences();
 		
 		// Interactions
@@ -109,7 +110,21 @@ public class DrawingModel extends AndroidViewModel {
 				l.setTransformation(dist);
 				return true;
 			}
+			
+			@Override
+			public boolean onDown(MotionEvent e) {
+				return true;
+			}
 		}));
+	}
+	
+	/**
+	 * Get the LiveData preventing rotations from being registered.
+	 *
+	 * @return LiveData for preventing rotation
+	 */
+	public NonNullLiveData<Boolean> getLockMovement() {
+		return lockMovement;
 	}
 	
 	/**

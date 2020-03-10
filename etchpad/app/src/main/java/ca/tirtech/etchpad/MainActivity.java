@@ -1,16 +1,12 @@
 package ca.tirtech.etchpad;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import ca.tirtech.etchpad.drawingView.DrawingView;
-import ca.tirtech.etchpad.drawingView.network.DrawingProtocol;
+import androidx.navigation.Navigation;
 import ca.tirtech.etchpad.hardware.InteractionService;
 import ca.tirtech.etchpad.hardware.PermissionManager;
 import com.google.android.material.snackbar.Snackbar;
@@ -22,8 +18,6 @@ public class MainActivity extends AppCompatActivity {
 	
 	private PermissionManager permissionManager;
 	private static final String TAG = "Main";
-	private DrawingView drawView;
-	private DrawingProtocol drawingProtocol;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,14 +26,8 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.help_toolbar);
 		setSupportActionBar(toolbar);
-		drawView = findViewById(R.id.drawingView);
-		permissionManager = new PermissionManager(v -> Snackbar.make(drawView, "Permissions ok", Snackbar.LENGTH_LONG).show());
+		permissionManager = new PermissionManager(v -> Snackbar.make(findViewById(R.id.activity_main), "Permissions ok", Snackbar.LENGTH_LONG).show());
 		permissionManager.checkAllPermissions(this);
-	}
-	
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		return InteractionService.onTouchEvent(event);
 	}
 	
 	@Override
@@ -54,57 +42,14 @@ public class MainActivity extends AppCompatActivity {
 		
 		switch (id) {
 			case R.id.action_settings:
-				Intent settings = new Intent(MainActivity.this, SettingsActivity.class);
-				startActivity(settings);
-				return true;
-			case R.id.action_export:
-				Log.i(TAG, "Exporting as JPG...");
-				drawView.getModel().export(drawView.getContext(), drawView.getWidth(), drawView.getHeight());
-				return true;
-			case R.id.action_save:
-				Log.i(TAG, "Saving as JSON ...");
-				drawView.getModel().save(drawView.getContext());
-				return true;
-			case R.id.action_load:
-				Log.i(TAG, "Loading JSON ...");
-				drawView.getModel().load(drawView.getContext());
-				return true;
-			case R.id.action_clear:
-				Log.i(TAG, "Cleared Screen");
-				drawView.getModel().getLayer().getValue().clear();
-				return true;
-			case R.id.action_host:
-				Log.i(TAG, "Hosting...");
-				drawingProtocol = new DrawingProtocol(this, drawView.getModel());
-				drawingProtocol.host();
-				return true;
-			case R.id.action_join:
-				Log.i(TAG, "Joining...");
-				drawingProtocol = new DrawingProtocol(this, drawView.getModel());
-				drawingProtocol.join();
-				return true;
-			case R.id.action_disconnect:
-				if (drawingProtocol != null) {
-					drawingProtocol.disconnect();
-				}
+				Navigation.findNavController(this, R.id.fragment).navigate(R.id.action_drawing_view_to_settings);
 				return true;
 			case R.id.action_help:
-				Intent help = new Intent(MainActivity.this, HelpActivity.class);
-				startActivity(help);
+				Navigation.findNavController(this, R.id.fragment).navigate(R.id.action_drawing_view_to_help);
 				return true;
 		}
 		
-		return super.onOptionsItemSelected(item);
-	}
-	
-	protected void onResume() {
-		super.onResume();
-		InteractionService.enable();
-	}
-	
-	protected void onPause() {
-		super.onPause();
-		InteractionService.disable();
+		return false;
 	}
 	
 	@Override
