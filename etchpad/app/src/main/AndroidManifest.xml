@@ -40,13 +40,6 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".SettingsActivity"
-                android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="ca.tirtech.etchpad.MainActivity"/>
-        </activity>
-        <activity
                 android:name=".HelpActivity"
                 android:theme="@style/AppTheme.NoActionBar">
             <meta-data

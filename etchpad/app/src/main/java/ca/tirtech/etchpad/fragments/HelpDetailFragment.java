@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.fragments;
 
 import android.os.Bundle;
 import android.text.Spanned;
@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RawRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import ca.tirtech.etchpad.R;
 import io.noties.markwon.Markwon;
 
 import java.io.BufferedReader;

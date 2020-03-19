@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import ca.tirtech.etchpad.mvvm.Event;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -17,6 +19,11 @@ public class DrawingView extends View {
 	
 	private static final String TAG = "Drawing View";
 	private DrawingModel model;
+	private final Observer<Event<Integer>> snackObserver = event -> {
+		if (isAttachedToWindow() && !event.isConsumed()) {
+			Snackbar.make(this, event.consume(), Snackbar.LENGTH_SHORT).show();
+		}
+	};
 	
 	/**
 	 * Create a view.
@@ -53,11 +60,7 @@ public class DrawingView extends View {
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.setOrientation(getResources().getConfiguration().orientation);
 		model.getLayer().observe(activity, layer -> invalidate());
-		model.getSnackbarMessage().observe(activity, event -> {
-			if (!event.isConsumed()) {
-				Snackbar.make(this, event.consume(), Snackbar.LENGTH_SHORT).show();
-			}
-		});
+		model.getSnackbarMessage().observe(activity, snackObserver);
 	}
 	
 	@Override

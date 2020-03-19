@@ -1,4 +1,4 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import androidx.annotation.RawRes;
 import androidx.annotation.StringRes;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import ca.tirtech.etchpad.R;
 
 /**
  * Main help menu providing options for help and information.
@@ -40,9 +42,7 @@ public class HelpMenuFragment extends Fragment {
 		Bundle arguments = new Bundle();
 		arguments.putInt(HelpDetailFragment.ARG_TITLE_ID, title);
 		arguments.putInt(HelpDetailFragment.ARG_ITEM_ID, text);
-		HelpDetailFragment fragment = new HelpDetailFragment();
-		fragment.setArguments(arguments);
-		if (getActivity() != null) ((HelpActivity) getActivity()).changeFragment(fragment, true);
+		Navigation.findNavController(getActivity(), R.id.fragment).navigate(R.id.action_helpMenuFragment_to_helpDetailFragment, arguments);
 	}
 	
 }

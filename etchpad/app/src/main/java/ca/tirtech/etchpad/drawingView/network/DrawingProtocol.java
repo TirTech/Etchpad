@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
@@ -110,16 +111,19 @@ public class DrawingProtocol {
 			model.sendSnackbarMessage(R.string.snack_no_location);
 			return;
 		}
+		model.getLockMovement().setValue(true);
 		dialog = new DrawingSyncDialog(activity, titleId, MAX_STAGE);
 		dialog.setStatusWithCancel(WAITING, activity.getString(waitingMessageId), (v) -> {
 			dialog.close();
 			connection.disconnect();
 			model.sendSnackbarMessage(cancelId);
+			model.getLockMovement().setValue(false);
 		});
 		callbacks.connectionRejectedCallback = (e -> {
 			dialog.close();
 			connection.disconnect();
 			model.sendSnackbarMessage(R.string.sync_dialog_verify_failed);
+			model.getLockMovement().setValue(false);
 		});
 		callbacks.onConnectedCallback = ((eid, cr) -> {
 			setupMessageHandler();
@@ -162,6 +166,7 @@ public class DrawingProtocol {
 	 * @param wasMessage whether this is being called by the user or a network message
 	 */
 	private void disconnect(boolean wasMessage) {
+		model.getLockMovement().setValue(false);
 		DrawingLayer layer = model.getLayer().getValue();
 		if (!wasMessage) {
 			try {
@@ -173,11 +178,24 @@ public class DrawingProtocol {
 			}
 		}
 		if (layer instanceof NetworkedDrawingLayer) {
-			try {
-				model.getLayer().setValue(new DrawingLayer(layer.jsonify()));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+			AlertDialog dcDialog = new AlertDialog.Builder(activity)
+					.setMessage(R.string.dialog_keep_on_disconnect)
+					.setTitle(R.string.dialog_keep_on_disconnect_title)
+					.setPositiveButton(R.string.yes, (d, b) -> {
+						try {
+							model.getLayer().setValue(new DrawingLayer(((NetworkedDrawingLayer) layer).jsonifyMerged()));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					})
+					.setNegativeButton(R.string.no, (d, b) -> {
+						try {
+							model.getLayer().setValue(new DrawingLayer(layer.jsonify()));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					})
+					.show();
 		}
 		connection.disconnect();
 		int messageId = wasMessage ? R.string.snack_disconnected_remote : R.string.snack_disconnected;
@@ -260,6 +278,7 @@ public class DrawingProtocol {
 		model.getLayer().setValue(new NetworkedDrawingLayer(this, model.getLayer().getValue(), newModel));
 		model.getLayer().getValue().setNickname(nickname);
 		dialog.close();
+		model.getLockMovement().setValue(false);
 		model.sendSnackbarMessage(R.string.snack_connected);
 	}
 	

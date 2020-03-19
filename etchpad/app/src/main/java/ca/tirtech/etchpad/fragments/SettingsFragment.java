@@ -1,7 +1,8 @@
-package ca.tirtech.etchpad;
+package ca.tirtech.etchpad.fragments;
 
 import android.os.Bundle;
 import androidx.preference.PreferenceFragmentCompat;
+import ca.tirtech.etchpad.R;
 
 /**
  * Fragment for the Settings Activity.
