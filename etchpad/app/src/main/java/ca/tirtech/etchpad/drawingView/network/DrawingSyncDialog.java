@@ -111,12 +111,12 @@ public class DrawingSyncDialog {
 		txtPrompt.setVisibility(View.GONE);
 		
 		Button btnPos = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-		btnPos.setText("Yes");
+		btnPos.setText(R.string.yes);
 		btnPos.setVisibility(View.VISIBLE);
 		btnPos.setOnClickListener((v) -> onAction.accept(true));
 		
 		Button btnNeg = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-		btnNeg.setText("No");
+		btnNeg.setText(R.string.no);
 		btnNeg.setVisibility(View.VISIBLE);
 		btnNeg.setOnClickListener((v) -> onAction.accept(false));
 	}

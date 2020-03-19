@@ -5,7 +5,6 @@ import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -21,14 +20,8 @@ public class DrawingView extends View {
 	private static final String TAG = "Drawing View";
 	private DrawingModel model;
 	private final Observer<Event<Integer>> snackObserver = event -> {
-		if (!isAttachedToWindow()) {
-			Log.i(TAG, "Not Attached!");
-			//model.getSnackbarMessage().removeObserver(this.snackObserver);
-		} else if (!event.isConsumed()) {
-			Log.i(TAG, "Attached!");
+		if (isAttachedToWindow() && !event.isConsumed()) {
 			Snackbar.make(this, event.consume(), Snackbar.LENGTH_SHORT).show();
-		} else {
-			Log.i(TAG, "Attached!");
 		}
 	};
 	

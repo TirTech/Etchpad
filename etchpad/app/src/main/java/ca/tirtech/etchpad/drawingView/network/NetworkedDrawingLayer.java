@@ -124,4 +124,25 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 		}
 		notifyChange();
 	}
+	
+	/**
+	 * Jsonify the drawing layer including the networked layer's paths.
+	 *
+	 * @return the merged jsonified layer
+	 * @throws JSONException JSON was invalid
+	 */
+	public JSONObject jsonifyMerged() throws JSONException {
+		JSONObject selfLayer = jsonify();
+		JSONArray netLayers = networkedLayer.jsonify().getJSONArray(JSON_LAYER_PATHS);
+		JSONArray selfLayers = selfLayer.getJSONArray(JSON_LAYER_PATHS);
+		JSONArray newLayers = new JSONArray();
+		for (int i = 0; i < netLayers.length(); i++) {
+			newLayers.put(netLayers.get(i));
+		}
+		for (int i = 0; i < selfLayers.length(); i++) {
+			newLayers.put(selfLayers.get(i));
+		}
+		selfLayer.put(JSON_LAYER_PATHS, newLayers);
+		return selfLayer;
+	}
 }

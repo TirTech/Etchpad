@@ -24,11 +24,11 @@ import java.util.Stack;
  * though this is discouraged.
  */
 public class DrawingLayer extends LiveDataObservable {
-	private static final String JSON_LAYER_PATHS = "layer_paths";
-	private static final String JSON_PAINT_COLOR = "paint_color";
-	private static final String JSON_X = "x";
-	private static final String JSON_Y = "y";
-	private static final String JSON_PATH = "path";
+	public static final String JSON_LAYER_PATHS = "layer_paths";
+	public static final String JSON_PAINT_COLOR = "paint_color";
+	public static final String JSON_X = "x";
+	public static final String JSON_Y = "y";
+	public static final String JSON_PATH = "path";
 	private float[] transformation = new float[]{0f, 0f};
 	private final float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();

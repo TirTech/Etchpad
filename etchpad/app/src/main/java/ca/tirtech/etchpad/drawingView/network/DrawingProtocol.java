@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
@@ -177,11 +178,24 @@ public class DrawingProtocol {
 			}
 		}
 		if (layer instanceof NetworkedDrawingLayer) {
-			try {
-				model.getLayer().setValue(new DrawingLayer(layer.jsonify()));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
+			AlertDialog dcDialog = new AlertDialog.Builder(activity)
+					.setMessage(R.string.dialog_keep_on_disconnect)
+					.setTitle(R.string.dialog_keep_on_disconnect_title)
+					.setPositiveButton(R.string.yes, (d, b) -> {
+						try {
+							model.getLayer().setValue(new DrawingLayer(((NetworkedDrawingLayer) layer).jsonifyMerged()));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					})
+					.setNegativeButton(R.string.no, (d, b) -> {
+						try {
+							model.getLayer().setValue(new DrawingLayer(layer.jsonify()));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					})
+					.show();
 		}
 		connection.disconnect();
 		int messageId = wasMessage ? R.string.snack_disconnected_remote : R.string.snack_disconnected;
