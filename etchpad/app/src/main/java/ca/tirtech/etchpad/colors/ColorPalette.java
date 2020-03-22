@@ -34,8 +34,17 @@ public class ColorPalette extends LiveDataObservable {
 		this.colors.add(Color.rgb(52, 152, 219));
 		this.colors.add(Color.rgb(155, 89, 182));
 		this.colors.add(Color.rgb(52, 73, 94));
+
 	}
-	
+
+	/**
+	 * Sets the colors for this palette.
+	 * @param colors the colors to set
+	 */
+	public void setColors(ArrayList<Integer> colors) {
+		this.colors = colors;
+	}
+
 	/**
 	 * Returns the colors contained in the palette.
 	 *
