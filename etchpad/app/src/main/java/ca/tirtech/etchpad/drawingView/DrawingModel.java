@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
+import android.os.VibrationEffect;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.Log;
@@ -93,12 +94,18 @@ public class DrawingModel extends AndroidViewModel {
 			public boolean onSingleTapConfirmed(MotionEvent e) {
 				colorPalette.getValue().nextColor();
 				getLayer().getValue().setColor(colorPalette.getValue().getSelectedColor());
+				InteractionService.getInstance().vibrate(VibrationEffect.createOneShot(InteractionService.VIBRATE_SHORT, VibrationEffect.DEFAULT_AMPLITUDE));
 				return true;
 			}
 			
 			@Override
 			public boolean onDoubleTap(MotionEvent e) {
 				InteractionService.getInstance().centerRotation();
+				InteractionService.getInstance().vibrate(VibrationEffect.createWaveform(new long[]{
+						InteractionService.VIBRATE_SHORT,
+						InteractionService.VIBRATE_SHORT,
+						InteractionService.VIBRATE_SHORT,
+						InteractionService.VIBRATE_SHORT}, -1));
 				return true;
 			}
 			
@@ -343,6 +350,7 @@ public class DrawingModel extends AndroidViewModel {
 		if (shakeCount >= 2 && !shakeLock.getValue()) {
 			layer.getValue().undo();
 			shakeLock.setValue(true);
+			InteractionService.getInstance().vibrate(VibrationEffect.createOneShot(125, VibrationEffect.DEFAULT_AMPLITUDE));
 		}
 	}
 	
