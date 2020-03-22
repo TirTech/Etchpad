@@ -84,6 +84,9 @@ public class ColorPaletteWidget extends View {
 	 * @param activity the activity to use for
 	 */
 	private void initModel(AppCompatActivity activity) {
+		if (isInEditMode()) {
+			return;
+		}
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.getColorPalette().observe(activity, pallet -> {
 			computePaints();
@@ -127,7 +130,7 @@ public class ColorPaletteWidget extends View {
 		float regionSize = (getWidth() - (2 * BORDER_THICKNESS)) / (float) paints.size();
 		for (int i = 0; i < paints.size(); i++) {
 			canvas.drawRect((i * regionSize) + BORDER_THICKNESS, 0, ((i + 1) * regionSize) + BORDER_THICKNESS, getHeight(), paints.get(i));
-			if (model.getColorPalette().getValue().getSelectedColorIndex() == i) {
+			if (!isInEditMode() && model.getColorPalette().getValue().getSelectedColorIndex() == i) {
 				canvas.drawRect((i * regionSize) + BORDER_THICKNESS, BORDER_THICKNESS, ((i + 1) * regionSize), getHeight() - BORDER_THICKNESS, SELECTION_PAINT);
 			}
 		}
@@ -139,7 +142,7 @@ public class ColorPaletteWidget extends View {
 	 * Recalculates the list of paints being displayed; recoloring, deleting, and creating paints as needed through {@link #initSelectionPaint()}.
 	 */
 	private void computePaints() {
-		ArrayList<Integer> colors = model.getColorPalette().getValue().getColors();
+		ArrayList<Integer> colors = isInEditMode() ? new ColorPalette().getColors() : model.getColorPalette().getValue().getColors();
 		while (paints.size() != colors.size()) {
 			if (paints.size() < colors.size()) {
 				Paint newPaint = new Paint();

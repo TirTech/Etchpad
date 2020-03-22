@@ -6,12 +6,15 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import ca.tirtech.etchpad.R;
+import ca.tirtech.etchpad.drawingView.DrawingModel;
 import ca.tirtech.etchpad.drawingView.DrawingView;
 import ca.tirtech.etchpad.drawingView.network.DrawingProtocol;
 import ca.tirtech.etchpad.hardware.InteractionService;
@@ -24,6 +27,23 @@ public class DrawingViewFragment extends Fragment {
 	private static final String TAG = "Drawing Fragment";
 	private DrawingView drawView;
 	private DrawingProtocol drawingProtocol;
+	private DrawingModel model;
+	private final SeekBar.OnSeekBarChangeListener penSizeChangeListener = new SeekBar.OnSeekBarChangeListener() {
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			model.setPaintSize(progress);
+			drawView.invalidate();
+		}
+		
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+		}
+		
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+		}
+	};
+	private SeekBar penSize;
 	
 	@Nullable
 	@Override
@@ -31,8 +51,20 @@ public class DrawingViewFragment extends Fragment {
 		ConstraintLayout root = (ConstraintLayout) inflater.inflate(R.layout.fragment_drawing_view, container, false);
 		setHasOptionsMenu(true);
 		drawView = root.findViewById(R.id.drawingView);
+		penSize = root.findViewById(R.id.sliderPenSize);
 		root.setOnTouchListener((v, e) -> InteractionService.onTouchEvent(e));
+		penSize.setOnSeekBarChangeListener(penSizeChangeListener);
+		initModel();
 		return root;
+	}
+	
+	private void initModel() {
+		model = new ViewModelProvider(getActivity(), ViewModelProvider.AndroidViewModelFactory.getInstance(getActivity().getApplication())).get(DrawingModel.class);
+		model.getLayer().observe(getViewLifecycleOwner(), (layer) -> {
+			if (layer.getPaintSize() != penSize.getProgress()) {
+				penSize.setProgress((int) layer.getPaintSize());
+			}
+		});
 	}
 	
 	@Override

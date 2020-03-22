@@ -57,6 +57,9 @@ public class DrawingView extends View {
 	}
 	
 	private void initModel(AppCompatActivity activity) {
+		if (isInEditMode()) {
+			return;
+		}
 		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
 		model.setOrientation(getResources().getConfiguration().orientation);
 		model.getLayer().observe(activity, layer -> invalidate());
@@ -67,6 +70,9 @@ public class DrawingView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		canvas.drawColor(Color.WHITE);
+		if (isInEditMode()) {
+			return;
+		}
 		model.getLayer().getValue();
 		model.getLayer().getValue().draw(canvas);
 	}

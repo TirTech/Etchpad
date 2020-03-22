@@ -345,4 +345,8 @@ public class DrawingModel extends AndroidViewModel {
 			shakeLock.setValue(true);
 		}
 	}
+	
+	public void setPaintSize(float size) {
+		layer.getValue().setPaintSize(size);
+	}
 }

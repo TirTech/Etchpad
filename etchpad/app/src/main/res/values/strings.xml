@@ -29,6 +29,7 @@
     </string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="pen_size">Pen Size</string>
 
     <!-- HELP MENUS -->
     <string name="help_card_about">About Etchpad</string>

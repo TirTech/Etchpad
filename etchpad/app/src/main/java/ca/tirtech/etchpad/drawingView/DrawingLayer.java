@@ -29,11 +29,13 @@ public class DrawingLayer extends LiveDataObservable {
 	public static final String JSON_X = "x";
 	public static final String JSON_Y = "y";
 	public static final String JSON_PATH = "path";
+	public static final String JSON_PAINT_SIZE = "paint_size";
 	private float[] transformation = new float[]{0f, 0f};
 	private final float[] screenOrigin = new float[]{0, 0};
 	private Stack<LayerPath> paths = new Stack<>();
 	private static final Paint textPaint = initPaint(Color.BLACK, 1f, Paint.Style.FILL_AND_STROKE);
 	private String nickname = "";
+	private float paintSize = 5f;
 	
 	/**
 	 * Construct a blank layer. The pen on this layer will start at the provided {@code (x,y)} position.
@@ -44,7 +46,7 @@ public class DrawingLayer extends LiveDataObservable {
 	public DrawingLayer(float width, float height) {
 		super();
 		setScreenOrigin(width, height);
-		paths.push(new LayerPath(initPaint(Color.RED, 5f), screenOrigin[0], screenOrigin[1]));
+		paths.push(new LayerPath(initPaint(Color.RED, paintSize), screenOrigin[0], screenOrigin[1]));
 	}
 	
 	/**
@@ -260,7 +262,7 @@ public class DrawingLayer extends LiveDataObservable {
 	 */
 	public void setColor(int color) {
 		LayerPath cur = getCurrentLayerPath();
-		paths.push(new LayerPath(initPaint(color, 5f), cur.x, cur.y));
+		paths.push(new LayerPath(initPaint(color, paintSize), cur.x, cur.y));
 		notifyPropertyChanged(BR.currentPaintColor);
 	}
 	
@@ -270,13 +272,35 @@ public class DrawingLayer extends LiveDataObservable {
 	public void undo() {
 		if (paths.size() > 1) {
 			paths.pop();
+			paintSize = getCurrentLayerPath().paint.getStrokeWidth();
+			notifyPropertyChanged(BR.paintSize);
 		} else if (paths.size() == 1) {
-			paths.set(0, new LayerPath(initPaint(Color.RED, 5f), screenOrigin[0], screenOrigin[1]));
+			paths.set(0, new LayerPath(initPaint(Color.RED, paintSize), screenOrigin[0], screenOrigin[1]));
 			transformation[0] = 0;
 			transformation[1] = 0;
 			notifyPropertyChanged(BR.transformation);
 		}
 		notifyPropertyChanged(BR.currentLayerPath);
+	}
+	
+	/**
+	 * Get the current paint size.
+	 *
+	 * @return the size of the paint.
+	 */
+	@Bindable
+	public float getPaintSize() {
+		return paintSize;
+	}
+	
+	/**
+	 * Sets the size of the Paint that is drawn.
+	 *
+	 * @param size the size of the paint
+	 */
+	public void setPaintSize(float size) {
+		getCurrentLayerPath().paint.setStrokeWidth(size);
+		this.paintSize = size;
 	}
 	
 	/**
@@ -343,6 +367,7 @@ public class DrawingLayer extends LiveDataObservable {
 			root.put(JSON_X, x);
 			root.put(JSON_Y, y);
 			root.put(JSON_PAINT_COLOR, paint.getColor());
+			root.put(JSON_PAINT_SIZE, paint.getStrokeWidth());
 			return root;
 		}
 		
@@ -357,7 +382,7 @@ public class DrawingLayer extends LiveDataObservable {
 			this.pathPoints = new ArrayList<>();
 			this.path = new Path();
 			
-			this.paint = initPaint(root.getInt(JSON_PAINT_COLOR), 5f);
+			this.paint = initPaint(root.getInt(JSON_PAINT_COLOR), (float) root.getDouble(JSON_PAINT_SIZE));
 			this.y = (float) root.getDouble(JSON_Y);
 			this.x = (float) root.getDouble(JSON_X);
 			JSONArray points = root.getJSONArray(JSON_PATH);
