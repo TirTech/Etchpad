@@ -18,7 +18,7 @@ public class ShakeManager implements SensorEventListener {
 	private static final String TAG = "Shake Manager";
 	private static final float SHAKE_THRESHOLD = 2.5f;
 	private static final float SHAKE_DELAY = 500;
-	private static final long SHAKE_RESET_TIMEOUT = 1500;
+	private static final long SHAKE_RESET_TIMEOUT = 800;
 	
 	private final SensorManager sensorManager;
 	private final Sensor accelerometer;
