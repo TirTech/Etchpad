@@ -2,11 +2,16 @@ package ca.tirtech.etchpad.colors;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -24,7 +29,22 @@ public class ColorPaletteWidget extends View {
 	private final float BORDER_THICKNESS = 5f;
 	private final Paint BORDER_PAINT;
 	private final Paint SELECTION_PAINT;
-	
+	private GestureDetector gd = new GestureDetector(getContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener(){
+
+		@Override
+		public boolean onSingleTapUp(MotionEvent e) {
+			//Log.i("TEST","HAAAAIII!!!");
+			Intent draw = new Intent(getContext(),ColorEditorActivity.class);
+			getContext().startActivity(draw);
+			return true;
+		}
+
+		@Override
+		public boolean onDown(MotionEvent e) {
+			return true;
+		}
+	});
+
 	/**
 	 * {@link DrawingModel} that this widget's {@link ColorPalette} is sourced from.
 	 */
@@ -33,8 +53,13 @@ public class ColorPaletteWidget extends View {
 	/**
 	 * List of {@link Paint} objects used to display the colors.
 	 */
-	private final ArrayList<Paint> paints = new ArrayList<>();
-	
+	private ArrayList<Paint> paints = new ArrayList<>();
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		return gd.onTouchEvent(event);
+	}
+
 	/**
 	 * Constructs a ColorPaletteWidget for the provided context.
 	 *

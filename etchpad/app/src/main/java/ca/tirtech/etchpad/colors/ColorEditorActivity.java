@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
