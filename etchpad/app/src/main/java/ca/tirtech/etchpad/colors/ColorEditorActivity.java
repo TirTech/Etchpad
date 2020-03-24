@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
@@ -21,6 +20,7 @@ public class ColorEditorActivity extends Fragment {
     SeekBar redSeek;
     SeekBar greenSeek;
     SeekBar blueSeek;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

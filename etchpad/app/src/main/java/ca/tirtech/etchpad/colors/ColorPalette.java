@@ -16,7 +16,7 @@ public class ColorPalette extends LiveDataObservable {
 	/**
 	 * List of all colors contained in the palette.
 	 */
-	private final ArrayList<Integer> colors = new ArrayList<>();
+	private ArrayList<Integer> colors = new ArrayList<>();
 	
 	/**
 	 * Index of color that is selected in the {@link #colors} list.
