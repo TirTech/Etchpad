@@ -309,7 +309,7 @@ public class DrawingModel extends AndroidViewModel {
 	public DeepLiveData<ColorPalette> getColorPalette() {
 		return colorPalette;
 	}
-	
+
 	/**
 	 * Get the LiveData for the drawing layer.
 	 *

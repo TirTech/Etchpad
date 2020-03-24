@@ -34,7 +34,13 @@ public class ColorPalette extends LiveDataObservable {
 		this.colors.add(Color.rgb(52, 152, 219));
 		this.colors.add(Color.rgb(155, 89, 182));
 		this.colors.add(Color.rgb(52, 73, 94));
+        this.colors.add(Color.rgb(46, 204, 113));
+        this.colors.add(Color.rgb(52, 152, 219));
+        this.colors.add(Color.rgb(155, 89, 182));
+	}
 
+	public ColorPalette(ArrayList<Integer> colors){
+		this.colors = colors;
 	}
 
 	/**
@@ -72,6 +78,7 @@ public class ColorPalette extends LiveDataObservable {
 	 */
 	public void setSelectedColor(int selectedColor) {
 		this.selectedColor = selectedColor;
+        notifyChange();
 	}
 	
 	/**
@@ -114,5 +121,10 @@ public class ColorPalette extends LiveDataObservable {
 	 */
 	public int getSelectedColorIndex() {
 		return selectedColor;
+	}
+
+	@Override
+	public ColorPalette clone(){
+		return new ColorPalette((ArrayList<Integer>) colors.clone());
 	}
 }

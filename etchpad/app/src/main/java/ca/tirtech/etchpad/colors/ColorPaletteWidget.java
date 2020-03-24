@@ -15,6 +15,9 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+
+import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
 
 import java.util.ArrayList;
@@ -29,37 +32,30 @@ public class ColorPaletteWidget extends View {
 	private final float BORDER_THICKNESS = 5f;
 	private final Paint BORDER_PAINT;
 	private final Paint SELECTION_PAINT;
-	private GestureDetector gd = new GestureDetector(getContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener(){
-
-		@Override
-		public boolean onSingleTapUp(MotionEvent e) {
-			//Log.i("TEST","HAAAAIII!!!");
-			Intent draw = new Intent(getContext(),ColorEditorActivity.class);
-			getContext().startActivity(draw);
-			return true;
-		}
-
-		@Override
-		public boolean onDown(MotionEvent e) {
-			return true;
-		}
-	});
-
+	
 	/**
 	 * {@link DrawingModel} that this widget's {@link ColorPalette} is sourced from.
 	 */
 	private DrawingModel model;
+
+    private final GestureDetector gd = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+			Navigation.findNavController(getActivity(getContext()), R.id.fragment).navigate(R.id.action_drawingViewFragment_to_colorEditorActivity);
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+    });
 	
 	/**
 	 * List of {@link Paint} objects used to display the colors.
 	 */
-	private ArrayList<Paint> paints = new ArrayList<>();
-
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		return gd.onTouchEvent(event);
-	}
-
+	private final ArrayList<Paint> paints = new ArrayList<>();
+	
 	/**
 	 * Constructs a ColorPaletteWidget for the provided context.
 	 *
@@ -182,5 +178,10 @@ public class ColorPaletteWidget extends View {
 		for (int i = 0; i < colors.size(); i++) {
 			paints.get(i).setColor(colors.get(i));
 		}
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		return gd.onTouchEvent(event);
 	}
 }
