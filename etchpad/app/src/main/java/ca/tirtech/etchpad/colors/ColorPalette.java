@@ -93,22 +93,19 @@ public class ColorPalette extends LiveDataObservable {
 	 * @param color the color to add
 	 */
 	public void addColor(int color) {
+		if (colors.size() > 10) return;
 		colors.add(color);
 		notifyPropertyChanged(BR.colors);
 	}
 	
 	/**
-	 * Removes the first instance of the specified color from the palette.
+	 * Removes the color at the specified index from the palette.
 	 *
 	 * @param color the color to remove
 	 */
 	public void removeColor(int color) {
-		for (int i = colors.size() - 1; i >= 0; i--) {
-			if (colors.get(i) == color) {
-				colors.remove(i);
-				break;
-			}
-		}
+		if (colors.size() <= 3) return;
+		colors.remove(color);
 		notifyPropertyChanged(BR.colors);
 	}
 	

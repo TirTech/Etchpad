@@ -53,6 +53,8 @@ public class ColorEditorFragment extends Fragment {
 		newPalette.addCallback((obs, propId) -> {
 			if (propId == BR.selectedColor) {
 				setCurrentColor(newPalette.getSelectedColor());
+			} else if (propId == BR.colors) {
+				paletteWidget.computePaints();
 			}
 		});
 		paletteWidget = new ColorPaletteEditor(getContext(), newPalette);
@@ -122,11 +124,11 @@ public class ColorEditorFragment extends Fragment {
         cancelBtn.setOnClickListener(v -> returnToDrawingView());
 
         addBtn.setOnClickListener(v -> {
-
+	        newPalette.addColor(Color.rgb((float) Math.random() * 255, (float) Math.random() * 255, (float) Math.random() * 255));
         });
 
         removeBtn.setOnClickListener(v -> {
-	
+	        newPalette.removeColor(newPalette.getSelectedColorIndex());
         });
     }
 	
@@ -134,7 +136,6 @@ public class ColorEditorFragment extends Fragment {
 		currentColor = Color.rgb(r, g, b);
 		layout.setBackgroundColor(currentColor);
 		newPalette.setColor(newPalette.getSelectedColorIndex(), currentColor);
-		paletteWidget.computePaints();
 	}
 	
 	/**
