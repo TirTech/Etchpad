@@ -32,6 +32,7 @@ public class PermissionManager {
 		perms.add(Manifest.permission.CHANGE_WIFI_STATE);
 		perms.add(Manifest.permission.ACCESS_COARSE_LOCATION);
 		perms.add(Manifest.permission.ACCESS_FINE_LOCATION);
+		perms.add(Manifest.permission.VIBRATE);
 	}
 	
 	/**

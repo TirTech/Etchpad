@@ -1,6 +1,8 @@
 package ca.tirtech.etchpad.hardware;
 
 import android.content.Context;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import androidx.core.util.Consumer;
@@ -12,10 +14,12 @@ import java.util.ArrayList;
  */
 public class InteractionService {
 	
+	public static final long VIBRATE_SHORT = 75;
 	private static InteractionService instance;
 	private final RotationManager rotationManager;
 	private final ShakeManager shakeManager;
 	private final ArrayList<GestureDetector> gestureDetectors;
+	private final Vibrator vibrationService;
 	
 	/**
 	 * Create a new instance and initialize all managers.
@@ -25,6 +29,7 @@ public class InteractionService {
 	private InteractionService(Context context) {
 		rotationManager = new RotationManager(context);
 		shakeManager = new ShakeManager(context);
+		vibrationService = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		gestureDetectors = new ArrayList<>();
 	}
 	
@@ -126,5 +131,14 @@ public class InteractionService {
 	 */
 	public void removeGestureDetector(GestureDetector detector) {
 		gestureDetectors.remove(detector);
+	}
+	
+	/**
+	 * Vibrate the device according to an effect.
+	 *
+	 * @param ve the vibration effect
+	 */
+	public void vibrate(VibrationEffect ve) {
+		vibrationService.vibrate(ve);
 	}
 }

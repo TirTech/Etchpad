@@ -21,9 +21,10 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 	
 	private static final String ACTION_CLEAR = "CLEAR";
 	private static final String ACTION_LINE_TO = "LINETO";
-	private static final String ACTION_SET_COLOR = "SETCOLOR";
+	private static final String ACTION_SET_COLOR = "SET_COLOR";
 	private static final String ACTION_UNDO = "UNDO";
 	private static final String ACTION_NICKNAME = "NICKNAME";
+	private static final String ACTION_SET_PAINT_SIZE = "PAINT_SIZE";
 	
 	private DrawingProtocol protocol;
 	private DrawingLayer networkedLayer;
@@ -96,6 +97,18 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 		protocol.createNetworkAction(ACTION_NICKNAME, json);
 	}
 	
+	@Override
+	public void setPaintSize(float size) {
+		super.setPaintSize(size);
+		try {
+			JSONArray json = new JSONArray();
+			json.put(size);
+			protocol.createNetworkAction(ACTION_SET_PAINT_SIZE, json);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Handle a received network message with a specified action and data. Actions are
 	 * performed against the {@link #networkedLayer};
@@ -120,6 +133,9 @@ public class NetworkedDrawingLayer extends DrawingLayer {
 				break;
 			case ACTION_NICKNAME:
 				networkedLayer.setNickname(value.getString(0));
+				break;
+			case ACTION_SET_PAINT_SIZE:
+				networkedLayer.setPaintSize((float) value.getDouble(0));
 				break;
 		}
 		notifyChange();
