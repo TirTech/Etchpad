@@ -2,20 +2,19 @@ package ca.tirtech.etchpad.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.databinding.library.baseAdapters.BR;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.colors.ColorPalette;
-import ca.tirtech.etchpad.colors.ColorPaletteWidget;
+import ca.tirtech.etchpad.colors.ColorPaletteEditor;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
 
 public class ColorEditorFragment extends Fragment {
@@ -34,26 +33,31 @@ public class ColorEditorFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        root = inflater.inflate(R.layout.activity_color_editor, container, false);
-        layout = root.findViewById(R.id.layoutCurrentColor);
-        colorPaletteContainer = root.findViewById(R.id.layoutColors);
-
-        initColorPalette();
-        initSeekBars();
-        setViewColor();
-        initButtons();
-        return root;
+	    root = inflater.inflate(R.layout.activity_color_editor, container, false);
+	    layout = root.findViewById(R.id.layoutCurrentColor);
+	    colorPaletteContainer = root.findViewById(R.id.layoutColors);
+	
+	    initColorPalette();
+	    initSeekBars();
+	    setCurrentColor(newPalette.getSelectedColor());
+	    initButtons();
+	    return root;
     }
-
-    private void initColorPalette() {
-        model = new ViewModelProvider(getActivity(), ViewModelProvider.AndroidViewModelFactory.getInstance(getActivity().getApplication())).get(DrawingModel.class);
-        newPalette = model.getColorPalette().getValue().clone();
-        newPalette.addCallback((obs, cInd)->{
-            //Todo biconsumer for color palette object
-        });
-        paletteWidget = new ColorPaletteEditor(getContext());
-        colorPaletteContainer.addView(paletteWidget);
-    }
+	
+	/**
+	 * Set up the color Palette from the model and initialize widgets.
+	 */
+	private void initColorPalette() {
+		model = new ViewModelProvider(getActivity(), ViewModelProvider.AndroidViewModelFactory.getInstance(getActivity().getApplication())).get(DrawingModel.class);
+		newPalette = model.getColorPalette().getValue().clone();
+		newPalette.addCallback((obs, propId) -> {
+			if (propId == BR.selectedColor) {
+				setCurrentColor(newPalette.getSelectedColor());
+			}
+		});
+		paletteWidget = new ColorPaletteEditor(getContext(), newPalette);
+		colorPaletteContainer.addView(paletteWidget);
+	}
 
     private void initSeekBars() {
         redSeek = root.findViewById(R.id.seekBar);
@@ -63,9 +67,8 @@ public class ColorEditorFragment extends Fragment {
         redSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                r = progress;
-                currentColor = Color.rgb(r,g,b);
-                setViewColor();
+	            r = progress;
+	            if (fromUser) setViewColor();
             }
 
             @Override
@@ -78,9 +81,8 @@ public class ColorEditorFragment extends Fragment {
         greenSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                g = progress;
-                currentColor = Color.rgb(r,g,b);
-                setViewColor();
+	            g = progress;
+	            if (fromUser) setViewColor();
             }
 
             @Override
@@ -94,8 +96,7 @@ public class ColorEditorFragment extends Fragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 b = progress;
-                currentColor = Color.rgb(r,g,b);
-                setViewColor();
+	            if (fromUser) setViewColor();
             }
 
             @Override
@@ -125,23 +126,32 @@ public class ColorEditorFragment extends Fragment {
         });
 
         removeBtn.setOnClickListener(v -> {
-
+	
         });
     }
-
-    private void setViewColor() {
-        currentColor = Color.rgb(r,g,b);
-        layout.setBackgroundColor(currentColor);
-    }
-
-    public void setCurrentColor(int color){
-        //TODO : set the seekbars to the rgb values of the new selected color
-        currentColor = color;
-        layout.setBackgroundColor(currentColor);
-    }
-
-    private void returnToDrawingView(){
-        Navigation.findNavController(getActivity(), R.id.fragment).navigate(R.id.action_colorEditorActivity_to_drawingViewFragment);
+	
+	private void setViewColor() {
+		currentColor = Color.rgb(r, g, b);
+		layout.setBackgroundColor(currentColor);
+		newPalette.setColor(newPalette.getSelectedColorIndex(), currentColor);
+		paletteWidget.computePaints();
+	}
+	
+	/**
+	 * Sets the shown color of the editor and sets bars appropriately.
+	 *
+	 * @param color the color to set
+	 */
+	public void setCurrentColor(int color) {
+		currentColor = color;
+		redSeek.setProgress(Color.red(currentColor));
+		greenSeek.setProgress(Color.green(currentColor));
+		blueSeek.setProgress(Color.blue(currentColor));
+		layout.setBackgroundColor(currentColor);
+	}
+	
+	private void returnToDrawingView() {
+		Navigation.findNavController(getActivity(), R.id.fragment).navigate(R.id.action_colorEditorActivity_to_drawingViewFragment);
     }
 
 }

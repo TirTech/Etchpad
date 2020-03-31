@@ -42,15 +42,21 @@ public class ColorPalette extends LiveDataObservable {
 	public ColorPalette(ArrayList<Integer> colors){
 		this.colors = colors;
 	}
-
+	
 	/**
 	 * Sets the colors for this palette.
+	 *
 	 * @param colors the colors to set
 	 */
 	public void setColors(ArrayList<Integer> colors) {
 		this.colors = colors;
 	}
-
+	
+	public void setColor(int pos, int color) {
+		this.colors.set(pos, color);
+		notifyPropertyChanged(BR.colors);
+	}
+	
 	/**
 	 * Returns the colors contained in the palette.
 	 *
@@ -78,7 +84,7 @@ public class ColorPalette extends LiveDataObservable {
 	 */
 	public void setSelectedColor(int selectedColor) {
 		this.selectedColor = selectedColor;
-        notifyChange();
+		notifyPropertyChanged(BR.selectedColor);
 	}
 	
 	/**
