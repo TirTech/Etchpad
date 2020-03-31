@@ -29,12 +29,14 @@ import ca.tirtech.etchpad.hardware.InteractionService;
 import ca.tirtech.etchpad.mvvm.DeepLiveData;
 import ca.tirtech.etchpad.mvvm.Event;
 import ca.tirtech.etchpad.mvvm.NonNullLiveData;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -45,6 +47,8 @@ import java.util.Date;
  */
 public class DrawingModel extends AndroidViewModel {
 	
+	private static final String JSON_MODEL = "model";
+	private static final String JSON_COLORS = "colors";
 	private static final String TAG = "Drawing Model";
 	private final SharedPreferences sharedPreferences;
 	private final DeepLiveData<DrawingLayer> layer;
@@ -188,9 +192,15 @@ public class DrawingModel extends AndroidViewModel {
 				.setPositiveButton("OK", (dialog, which) -> {
 					try {
 						String in = input.getText().toString();
-						String json = layer.getValue().jsonify().toString();
-						Log.d(TAG, json);
-						FileUtils.writeToFile(context, in.isEmpty() ? jsonFileName : in, ".json", Environment.DIRECTORY_DOCUMENTS, json);
+						JSONObject json = new JSONObject();
+						JSONObject model = layer.getValue().jsonify();
+						JSONArray colors = new JSONArray();
+						for (int color : colorPalette.getValue().getColors()) {
+							colors.put(color);
+						}
+						json.put(JSON_MODEL, model);
+						json.put(JSON_COLORS, colors);
+						FileUtils.writeToFile(context, in.isEmpty() ? jsonFileName : in, ".json", Environment.DIRECTORY_DOCUMENTS, json.toString());
 						lockMovement.setValue(false);
 						sendSnackbarMessage(R.string.model_save);
 					} catch (IOException | JSONException e) {
@@ -227,7 +237,14 @@ public class DrawingModel extends AndroidViewModel {
 						String json = FileUtils.readFromFile(context, input.getText().toString(), ".json", "", Environment.DIRECTORY_DOCUMENTS);
 						Log.i(TAG, "JSON in: " + json);
 						JSONObject root = new JSONObject(json);
-						layer.setValue(new DrawingLayer(root));
+						JSONArray colors = root.getJSONArray(JSON_COLORS);
+						JSONObject model = root.getJSONObject(JSON_MODEL);
+						ArrayList<Integer> newColors = new ArrayList<>();
+						for (int i = 0; i < colors.length(); i++) {
+							newColors.add(colors.getInt(i));
+						}
+						colorPalette.getValue().setColors(newColors);
+						layer.setValue(new DrawingLayer(model));
 						lockMovement.setValue(false);
 						sendSnackbarMessage(R.string.model_load);
 					} catch (IOException | JSONException e) {
@@ -309,7 +326,7 @@ public class DrawingModel extends AndroidViewModel {
 	public DeepLiveData<ColorPalette> getColorPalette() {
 		return colorPalette;
 	}
-	
+
 	/**
 	 * Get the LiveData for the drawing layer.
 	 *

@@ -2,7 +2,6 @@ package ca.tirtech.etchpad.colors;
 
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,61 +10,51 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
-
-import ca.tirtech.etchpad.R;
-import ca.tirtech.etchpad.drawingView.DrawingModel;
 
 import java.util.ArrayList;
 
-/**
- * Renders the {@link DrawingModel DrawingModel's} {@link ColorPalette} as a horizontal bar.
- * The currently selected item is highlighted with a border.
- */
-public class ColorPaletteWidget extends View {
+public class ColorPaletteEditor extends View {
 	
 	private static final String TAG = "Color Palette Widget";
 	private final float BORDER_THICKNESS = 5f;
 	private final Paint BORDER_PAINT;
 	private final Paint SELECTION_PAINT;
-	
-	/**
-	 * {@link DrawingModel} that this widget's {@link ColorPalette} is sourced from.
-	 */
-	private DrawingModel model;
-
-    private final GestureDetector gd = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-			Navigation.findNavController(getActivity(getContext()), R.id.fragment).navigate(R.id.action_drawingViewFragment_to_colorEditorActivity);
-            return true;
-        }
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
-    });
-	
 	/**
 	 * List of {@link Paint} objects used to display the colors.
 	 */
 	private final ArrayList<Paint> paints = new ArrayList<>();
+	private final ColorPalette palette;
+	private final GestureDetector gd = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+		@Override
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			float x = e.getX();
+			int width = getWidth();
+			int selectedColor = (int) ((x / width) * paints.size());
+			Log.i("color: ", selectedColor + "");
+			palette.setSelectedColor(selectedColor);
+			invalidate();
+			return true;
+		}
+		
+		
+		@Override
+		public boolean onDown(MotionEvent e) {
+			return true;
+		}
+	});
 	
 	/**
 	 * Constructs a ColorPaletteWidget for the provided context.
 	 *
 	 * @param context context to use for this widget
 	 */
-	public ColorPaletteWidget(Context context) {
+	public ColorPaletteEditor(Context context, ColorPalette palette) {
 		super(context);
 		BORDER_PAINT = initBorderPaint();
 		SELECTION_PAINT = initSelectionPaint();
-		initModel(getActivity(context));
+		this.palette = palette;
 		computePaints();
 	}
 	
@@ -75,11 +64,11 @@ public class ColorPaletteWidget extends View {
 	 * @param context context to use for this widget
 	 * @param attrs   view attributes
 	 */
-	public ColorPaletteWidget(Context context, @Nullable AttributeSet attrs) {
+	public ColorPaletteEditor(Context context, @Nullable AttributeSet attrs, ColorPalette palette) {
 		super(context, attrs);
 		BORDER_PAINT = initBorderPaint();
 		SELECTION_PAINT = initSelectionPaint();
-		initModel(getActivity(context));
+		this.palette = palette;
 		computePaints();
 	}
 	
@@ -97,22 +86,6 @@ public class ColorPaletteWidget extends View {
 			context = ((ContextWrapper) context).getBaseContext();
 		}
 		return null;
-	}
-	
-	/**
-	 * Retrieve the {@link DrawingModel} used as the source of colors.
-	 *
-	 * @param activity the activity to use for
-	 */
-	private void initModel(AppCompatActivity activity) {
-		if (isInEditMode()) {
-			return;
-		}
-		model = new ViewModelProvider(activity, ViewModelProvider.AndroidViewModelFactory.getInstance(activity.getApplication())).get(DrawingModel.class);
-		model.getColorPalette().observe(activity, pallet -> {
-			computePaints();
-			invalidate();
-		});
 	}
 	
 	/**
@@ -151,7 +124,7 @@ public class ColorPaletteWidget extends View {
 		float regionSize = (getWidth() - (2 * BORDER_THICKNESS)) / (float) paints.size();
 		for (int i = 0; i < paints.size(); i++) {
 			canvas.drawRect((i * regionSize) + BORDER_THICKNESS, 0, ((i + 1) * regionSize) + BORDER_THICKNESS, getHeight(), paints.get(i));
-			if (!isInEditMode() && model.getColorPalette().getValue().getSelectedColorIndex() == i) {
+			if (!isInEditMode() && palette.getSelectedColorIndex() == i) {
 				canvas.drawRect((i * regionSize) + BORDER_THICKNESS, BORDER_THICKNESS, ((i + 1) * regionSize), getHeight() - BORDER_THICKNESS, SELECTION_PAINT);
 			}
 		}
@@ -162,8 +135,8 @@ public class ColorPaletteWidget extends View {
 	/**
 	 * Recalculates the list of paints being displayed; recoloring, deleting, and creating paints as needed through {@link #initSelectionPaint()}.
 	 */
-	private void computePaints() {
-		ArrayList<Integer> colors = isInEditMode() ? new ColorPalette().getColors() : model.getColorPalette().getValue().getColors();
+	public void computePaints() {
+		ArrayList<Integer> colors = palette.getColors();
 		while (paints.size() != colors.size()) {
 			if (paints.size() < colors.size()) {
 				Paint newPaint = new Paint();
@@ -178,10 +151,12 @@ public class ColorPaletteWidget extends View {
 		for (int i = 0; i < colors.size(); i++) {
 			paints.get(i).setColor(colors.get(i));
 		}
+		invalidate();
 	}
-
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		return gd.onTouchEvent(event);
 	}
+	
 }

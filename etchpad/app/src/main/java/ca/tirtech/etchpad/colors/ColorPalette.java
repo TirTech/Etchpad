@@ -16,7 +16,7 @@ public class ColorPalette extends LiveDataObservable {
 	/**
 	 * List of all colors contained in the palette.
 	 */
-	private final ArrayList<Integer> colors = new ArrayList<>();
+	private ArrayList<Integer> colors = new ArrayList<>();
 	
 	/**
 	 * Index of color that is selected in the {@link #colors} list.
@@ -34,6 +34,27 @@ public class ColorPalette extends LiveDataObservable {
 		this.colors.add(Color.rgb(52, 152, 219));
 		this.colors.add(Color.rgb(155, 89, 182));
 		this.colors.add(Color.rgb(52, 73, 94));
+        this.colors.add(Color.rgb(46, 204, 113));
+        this.colors.add(Color.rgb(52, 152, 219));
+        this.colors.add(Color.rgb(155, 89, 182));
+	}
+
+	public ColorPalette(ArrayList<Integer> colors){
+		this.colors = colors;
+	}
+	
+	/**
+	 * Sets the colors for this palette.
+	 *
+	 * @param colors the colors to set
+	 */
+	public void setColors(ArrayList<Integer> colors) {
+		this.colors = colors;
+	}
+	
+	public void setColor(int pos, int color) {
+		this.colors.set(pos, color);
+		notifyPropertyChanged(BR.colors);
 	}
 	
 	/**
@@ -63,6 +84,7 @@ public class ColorPalette extends LiveDataObservable {
 	 */
 	public void setSelectedColor(int selectedColor) {
 		this.selectedColor = selectedColor;
+		notifyPropertyChanged(BR.selectedColor);
 	}
 	
 	/**
@@ -71,22 +93,19 @@ public class ColorPalette extends LiveDataObservable {
 	 * @param color the color to add
 	 */
 	public void addColor(int color) {
+		if (colors.size() > 10) return;
 		colors.add(color);
 		notifyPropertyChanged(BR.colors);
 	}
 	
 	/**
-	 * Removes the first instance of the specified color from the palette.
+	 * Removes the color at the specified index from the palette.
 	 *
 	 * @param color the color to remove
 	 */
 	public void removeColor(int color) {
-		for (int i = colors.size() - 1; i >= 0; i--) {
-			if (colors.get(i) == color) {
-				colors.remove(i);
-				break;
-			}
-		}
+		if (colors.size() <= 3) return;
+		colors.remove(color);
 		notifyPropertyChanged(BR.colors);
 	}
 	
@@ -105,5 +124,10 @@ public class ColorPalette extends LiveDataObservable {
 	 */
 	public int getSelectedColorIndex() {
 		return selectedColor;
+	}
+
+	@Override
+	public ColorPalette clone(){
+		return new ColorPalette((ArrayList<Integer>) colors.clone());
 	}
 }
