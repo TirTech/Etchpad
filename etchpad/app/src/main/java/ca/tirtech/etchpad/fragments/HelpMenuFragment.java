@@ -27,6 +27,14 @@ public class HelpMenuFragment extends Fragment {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) navigateToHelp(R.string.help_card_about, R.raw.help_about);
 			return true;
 		});
+		root.findViewById(R.id.help_item_how_to).setOnTouchListener((view, event) -> {
+			if (event.getAction() == MotionEvent.ACTION_DOWN) navigateToHelp(R.string.help_card_how_to, R.raw.help_how_to);
+			return true;
+		});
+		root.findViewById(R.id.help_item_how_to_network).setOnTouchListener((view, event) -> {
+			if (event.getAction() == MotionEvent.ACTION_DOWN) navigateToHelp(R.string.help_card_how_to_network, R.raw.help_how_to_network);
+			return true;
+		});
 		setHasOptionsMenu(true);
 		Toolbar appBarLayout = getActivity().findViewById(R.id.app_toolbar);
 		if (appBarLayout != null) {

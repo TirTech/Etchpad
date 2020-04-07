@@ -39,4 +39,6 @@
     <string name="snack_not_connected">You are not connected to anyone. No need to disconnect.</string>
     <string name="sync_dialog_error">Something went wrong! View the help or try again.</string>
     <string name="action_center">Center on Cursor</string>
+    <string name="help_card_how_to">How To</string>
+    <string name="help_card_how_to_network">How To: Networking</string>
 </resources>

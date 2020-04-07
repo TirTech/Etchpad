@@ -1,5 +1,6 @@
 package ca.tirtech.etchpad.fragments;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
@@ -162,4 +163,15 @@ public class ColorEditorFragment extends Fragment {
 		Navigation.findNavController(getActivity(), R.id.fragment).popBackStack();
 	}
 	
+	@Override
+	public void onPause() {
+		super.onPause();
+		getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+	}
 }
