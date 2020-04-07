@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		InteractionService.init(this);
 		setContentView(R.layout.activity_main);
-		Toolbar toolbar = findViewById(R.id.help_toolbar);
+		Toolbar toolbar = findViewById(R.id.app_toolbar);
 		setSupportActionBar(toolbar);
-		permissionManager = new PermissionManager(v -> Snackbar.make(findViewById(R.id.activity_main), "Permissions ok", Snackbar.LENGTH_LONG).show());
+		permissionManager = new PermissionManager(v -> Snackbar.make(findViewById(R.id.activity_main), R.string.snack_ready, Snackbar.LENGTH_LONG).show());
 		permissionManager.checkAllPermissions(this);
 	}
 	
@@ -46,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
 				return true;
 			case R.id.action_help:
 				Navigation.findNavController(this, R.id.fragment).navigate(R.id.action_drawing_view_to_help);
+				return true;
+			case R.id.action_color_editor:
+				Navigation.findNavController(this, R.id.fragment).navigate(R.id.action_drawingViewFragment_to_colorEditorActivity);
 				return true;
 		}
 		

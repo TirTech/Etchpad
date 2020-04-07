@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Environment;
 import android.os.VibrationEffect;
@@ -284,10 +282,7 @@ public class DrawingModel extends AndroidViewModel {
 					try {
 						String in = input.getText().toString();
 						//Load Bitmap
-						Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-						Canvas fakeCanvas = new Canvas(b);
-						fakeCanvas.drawColor(Color.WHITE);
-						layer.getValue().draw(fakeCanvas);
+						Bitmap b = layer.getValue().drawForExport();
 						ByteArrayOutputStream fos = new ByteArrayOutputStream();
 						b.compress(Bitmap.CompressFormat.JPEG, 95, fos);
 						fos.flush();

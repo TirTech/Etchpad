@@ -27,16 +27,16 @@ public class ColorPalette extends LiveDataObservable {
 	 * Construct a ColorPalette containing the default colors.
 	 */
 	public ColorPalette() {
-		this.colors.add(Color.rgb(231, 76, 60));
-		this.colors.add(Color.rgb(230, 126, 34));
-		this.colors.add(Color.rgb(241, 196, 15));
-		this.colors.add(Color.rgb(46, 204, 113));
-		this.colors.add(Color.rgb(52, 152, 219));
-		this.colors.add(Color.rgb(155, 89, 182));
-		this.colors.add(Color.rgb(52, 73, 94));
-        this.colors.add(Color.rgb(46, 204, 113));
-        this.colors.add(Color.rgb(52, 152, 219));
-        this.colors.add(Color.rgb(155, 89, 182));
+		this.colors.add(Color.rgb(231, 76, 60)); //Red
+		this.colors.add(Color.rgb(230, 126, 34)); //Orange
+		this.colors.add(Color.rgb(241, 196, 15)); //Yellow
+		this.colors.add(Color.rgb(26, 188, 156)); //Turquoise
+		this.colors.add(Color.rgb(46, 204, 113)); //Green
+		this.colors.add(Color.rgb(52, 152, 219)); //Blue
+		this.colors.add(Color.rgb(155, 89, 182)); //Purple
+		this.colors.add(Color.rgb(52, 73, 94)); //Black
+		this.colors.add(Color.rgb(149, 165, 166)); //Gray
+		this.colors.add(Color.WHITE); //White
 	}
 
 	public ColorPalette(ArrayList<Integer> colors){

@@ -2,14 +2,12 @@ package ca.tirtech.etchpad.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RawRes;
 import androidx.annotation.StringRes;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -29,7 +27,18 @@ public class HelpMenuFragment extends Fragment {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) navigateToHelp(R.string.help_card_about, R.raw.help_about);
 			return true;
 		});
+		setHasOptionsMenu(true);
+		Toolbar appBarLayout = getActivity().findViewById(R.id.app_toolbar);
+		if (appBarLayout != null) {
+			appBarLayout.setTitle(R.string.action_help);
+		}
 		return root;
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		menu.clear();
 	}
 	
 	/**
