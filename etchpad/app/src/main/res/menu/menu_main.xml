@@ -18,6 +18,11 @@
             android:title="@string/action_settings"
             app:showAsAction="never"/>
     <item
+            android:id="@+id/action_color_editor"
+            android:orderInCategory="100"
+            android:title="@string/action_color_editor"
+            app:showAsAction="never"/>
+    <item
             android:id="@+id/action_export"
             android:orderInCategory="100"
             android:title="@string/action_export"
@@ -26,6 +31,11 @@
             android:id="@+id/action_clear"
             android:orderInCategory="100"
             android:title="@string/action_clear"
+            app:showAsAction="never"/>
+    <item
+            android:id="@+id/action_center"
+            android:orderInCategory="100"
+            android:title="@string/action_center"
             app:showAsAction="never"/>
     <item
             android:id="@+id/menu_connect"

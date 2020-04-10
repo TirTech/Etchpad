@@ -1,9 +1,6 @@
 package ca.tirtech.etchpad.drawingView;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import androidx.core.util.Pair;
 import androidx.databinding.Bindable;
 import androidx.databinding.library.baseAdapters.BR;
@@ -112,6 +109,15 @@ public class DrawingLayer extends LiveDataObservable {
 	}
 	
 	/**
+	 * Centers the cursor on the screen.
+	 */
+	public void centerOnCursor() {
+		transformation[0] = screenOrigin[0] - getCurrentLayerPath().x;
+		transformation[1] = screenOrigin[1] - getCurrentLayerPath().y;
+		notifyChange();
+	}
+	
+	/**
 	 * Set the transformation to apply to this view.
 	 *
 	 * @param transformation the new transformation
@@ -184,7 +190,10 @@ public class DrawingLayer extends LiveDataObservable {
 		}
 		LayerPath cur = getCurrentLayerPath();
 		canvas.drawCircle(cur.x + transformation[0], cur.y + transformation[1], 10, cur.paint);
-		canvas.drawText(nickname,cur.x + transformation[0], cur.y + transformation[1]-30, textPaint);
+		canvas.drawText(nickname, cur.x + transformation[0], cur.y + transformation[1] - 30, textPaint);
+		/*RectF b = calculateBounds();
+		b.offset(transformation[0],transformation[1]);
+		canvas.drawRect(b, cur.paint);*/
 	}
 	
 	/**
@@ -301,6 +310,38 @@ public class DrawingLayer extends LiveDataObservable {
 	public void setPaintSize(float size) {
 		getCurrentLayerPath().paint.setStrokeWidth(size);
 		this.paintSize = size;
+	}
+	
+	/**
+	 * Calculates the rectangle that fully contains all paths in this layer.
+	 *
+	 * @return the computed bounds
+	 */
+	private RectF calculateBounds() {
+		RectF allBounds = new RectF();
+		RectF pathBounds = new RectF();
+		for (LayerPath lp : paths) {
+			lp.path.computeBounds(pathBounds, true);
+			allBounds.union(pathBounds);
+		}
+		return allBounds;
+	}
+	
+	/**
+	 * Draws the layer on a bitmap, ensuring the full drawing is visible.
+	 *
+	 * @return the drawn bitmap
+	 */
+	public Bitmap drawForExport() {
+		RectF allBounds = calculateBounds();
+		Bitmap b = Bitmap.createBitmap((int) Math.ceil(allBounds.width()), (int) Math.ceil(allBounds.height()), Bitmap.Config.ARGB_8888);
+		Canvas fakeCanvas = new Canvas(b);
+		fakeCanvas.drawColor(Color.WHITE);
+		float[] oldTransform = transformation;
+		transformation = new float[]{-allBounds.left, -allBounds.top};
+		draw(fakeCanvas);
+		transformation = oldTransform;
+		return b;
 	}
 	
 	/**

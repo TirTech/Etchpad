@@ -3,9 +3,7 @@ package ca.tirtech.etchpad.fragments;
 import android.os.Bundle;
 import android.text.Spanned;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,16 +39,23 @@ public class HelpDetailFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setHasOptionsMenu(true);
 		
 		if (getArguments() != null && getArguments().containsKey(ARG_ITEM_ID) && getArguments().containsKey(ARG_TITLE_ID) && getActivity() != null) {
 			resId = getArguments().getInt(ARG_ITEM_ID);
-			Toolbar appBarLayout = getActivity().findViewById(R.id.help_toolbar);
+			Toolbar appBarLayout = getActivity().findViewById(R.id.app_toolbar);
 			if (appBarLayout != null) {
 				appBarLayout.setTitle(getArguments().getInt(ARG_TITLE_ID));
 			}
 		} else {
 			resId = -1;
 		}
+	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		menu.clear();
 	}
 	
 	@Nullable

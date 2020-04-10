@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog;
 import ca.tirtech.etchpad.R;
 import ca.tirtech.etchpad.drawingView.DrawingLayer;
 import ca.tirtech.etchpad.drawingView.DrawingModel;
+import ca.tirtech.etchpad.mvvm.VoidFunction;
 import ca.tirtech.etchpad.networking.CallbackHelper;
 import ca.tirtech.etchpad.networking.NearbyConnection;
 import com.google.android.gms.nearby.connection.Payload;
@@ -44,6 +45,7 @@ public class DrawingProtocol {
 	private final Activity activity;
 	private final LocationManager lm;
 	private String nickname;
+	private VoidFunction onDisconnectCallback;
 	
 	/**
 	 * Create a drawing protocol to provide syncing with the given model.
@@ -57,6 +59,15 @@ public class DrawingProtocol {
 		lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 		this.connection = new NearbyConnection(activity);
 		callbacks = connection.getCallbacks();
+	}
+	
+	/**
+	 * Set the callback to be invoked when this connection is lost, closed, or fails to start.
+	 *
+	 * @param onDisconnectCallback the function to call
+	 */
+	public void setOnDisconnectCallback(VoidFunction onDisconnectCallback) {
+		this.onDisconnectCallback = onDisconnectCallback;
 	}
 	
 	/**
@@ -109,6 +120,7 @@ public class DrawingProtocol {
 	private void startCommunication(int waitingMessageId, int titleId, int cancelId) {
 		if (!isLocationEnabled()) {
 			model.sendSnackbarMessage(R.string.snack_no_location);
+			onDisconnectCallback.call();
 			return;
 		}
 		model.getLockMovement().setValue(true);
@@ -118,12 +130,14 @@ public class DrawingProtocol {
 			connection.disconnect();
 			model.sendSnackbarMessage(cancelId);
 			model.getLockMovement().setValue(false);
+			onDisconnectCallback.call();
 		});
 		callbacks.connectionRejectedCallback = (e -> {
 			dialog.close();
 			connection.disconnect();
 			model.sendSnackbarMessage(R.string.sync_dialog_verify_failed);
 			model.getLockMovement().setValue(false);
+			onDisconnectCallback.call();
 		});
 		callbacks.onConnectedCallback = ((eid, cr) -> {
 			setupMessageHandler();
@@ -132,6 +146,11 @@ public class DrawingProtocol {
 					synchronizeCanvases();
 				} catch (JSONException e) {
 					e.printStackTrace();
+					dialog.close();
+					connection.disconnect();
+					model.sendSnackbarMessage(R.string.sync_dialog_error);
+					model.getLockMovement().setValue(false);
+					onDisconnectCallback.call();
 				}
 			}
 		});
@@ -200,6 +219,7 @@ public class DrawingProtocol {
 		connection.disconnect();
 		int messageId = wasMessage ? R.string.snack_disconnected_remote : R.string.snack_disconnected;
 		model.sendSnackbarMessage(messageId);
+		onDisconnectCallback.call();
 	}
 	
 	/**
